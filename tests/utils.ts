@@ -4,7 +4,7 @@ const HomePage = `${process.env.CRM_BASE_URL}/home`;
 const LoginPage = `${process.env.CRM_BASE_URL}/login`;
 const AgentDesktopPage = `${process.env.CRM_BASE_URL}/agent-desktop`;
 const ContactPage = `${process.env.CRM_BASE_URL}/contact`;
-
+const BaseUrl = process.env.CRM_BASE_URL || "";
 const UserCRM = "wittawat+crmv3@cloudsoft.co.th";
 const PassCRM = "MAIaam1146!";
 
@@ -20,7 +20,7 @@ const UrlTimeout = 3000; // 3s
 const CloseTimeout = 2000; // 2s
 
 const SetTimeOut = (duration: String): number => {
-  const lastChar: string | undefined = duration.at(-1);
+  const lastChar: string | undefined = duration.charAt(-1);
   const timeOutStr = duration.slice(0, duration.length);
   const miliTime = 1000;
 
@@ -49,6 +49,7 @@ export {
   UrlTimeout,
   CloseTimeout,
   Files,
+  BaseUrl
 };
 
 // export function
