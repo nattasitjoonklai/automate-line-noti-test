@@ -25,5 +25,7 @@ setup("kbj_full_template_setup", async ({ page }) => {
   await page.getByText('full_test', { exact: true }).click();
   await page.getByText('Testedit', { exact: true }).click();
   await page.getByText("Save").click();
+ await page.waitForTimeout(10000)
+
   await page.context().storageState({ path: templateFile });
 });

@@ -1,5 +1,6 @@
 import { Page, APIRequestContext, expect } from "@playwright/test";
 import {FillInputContactForm, ContactFormFields} from "./FillForm";
+import { r } from "@faker-js/faker/dist/airline-DF6RqYmq";
 export type SearchParams = {
   organize_id: string;
   template_id: string;
@@ -23,12 +24,17 @@ export type SearchParams = {
     Dropdown_mutlple_lv5?: string;
     Dropdown_mutlple_lv6?: string;
     Datamasking ?: string;
+    Checkbox_TrueFalse ?: string;
+    Radio ?: string;
+    Datetime ?: string;
+    Date ?: string;
+    Time ?: string;
 };
-
+ let json_data: any = {};  
 export class ContactAPI {
-  static token = "iAS-MNCCXmyR4FhYh-a1W0EPuoMB-TufSUIfGBDDoU9CGCwnMgGSvskX2fI66B3AJAzgBsqJkhJNbudXXNSVe21ryezfaOBmV8Ecr2u5VloksgiM"; // <<-- คุณใส่ token ไว้ที่นี่ครั้งเดียว
+  static token = "k6BHq2LvhSGxPBzwQ0Aj5uQ1uITeMrmA1XQH8R9oLwVtOSeKMzcs8EtnlrPZ-qU64s8SNmoGleaIsXEyh0ngNCG7gnl-tyiS6xtz_Qm9kCn-HBzG"; // <<-- คุณใส่ token ไว้ที่นี่ครั้งเดียว
 
-  static async fetchContacts(request: APIRequestContext, params: SearchParams) {
+  static async fetchContacts(request: APIRequestContext, params: SearchParams ) {
     const apiParams: Record<string, string> = {
       organize_id: params.organize_id,
       template_id: params.template_id,
@@ -54,7 +60,14 @@ export class ContactAPI {
     if(params.Dropdown_mutlple_lv5) apiParams["data.BI5q7i"] = params.Dropdown_mutlple_lv5;
     if(params.Dropdown_mutlple_lv6) apiParams["data.fKpu0q"] = params.Dropdown_mutlple_lv6;
     if(params.Datamasking) apiParams["data.datamasking"] = params.Datamasking;   
+    if(params.Checkbox_TrueFalse) apiParams["data.chkbox"] = params.Checkbox_TrueFalse;
+    if(params.Radio) apiParams["data.radiobtn"] = params.Radio;
+    if(params.Datetime) apiParams["data.feu1"] = params.Datetime;
+    if(params.Date) apiParams["data.R8i6Yo"] = params.Date;
+    if(params.Time) apiParams["data.yC3zrN"] = params.Time;
+
      const query = new URLSearchParams(apiParams).toString();
+console.log(query);
 
     const apiResponse = await request.get(
       `https://api-dev.cloudcentric.app/api/contacts/filter?${query}`,
@@ -67,11 +80,13 @@ export class ContactAPI {
       }
     );
 
-    const json = await apiResponse.json();
-    console.log(json);
+     json_data = await apiResponse.json();
+    console.log(json_data);
     
-    const raw = json?.data?.data ?? [];
-console.log(raw);
+    
+    const raw = json_data?.data?.data ?? [];
+    console.log(raw);
+    
     return raw.map((item: any) => ({
       Name: item.name,
       NationalID: item.national_id,
@@ -92,9 +107,14 @@ console.log(raw);
         Dropdown_mutlple_lv5: item.BI5q7i,
         Dropdown_mutlple_lv6: item.Rtp6MP,
         Datamasking : item.datamasking,
-    })) as ContactFormFields[];
+        Checkbox_TrueFalse : item.chkbox  ,
+        Radio : item.radiobtn ,
+        Datetime : item.feu1,
+        Date : item.R8i6Yo,
+        Time : item.yC3zrN
+    })) as ContactFormFields[]
+   
   }
-
   // 🔥 รวมทุกอย่างให้เหลือบรรทัดเดียวใน test
   static async searchAndVerify(page: Page, request: APIRequestContext, form: ContactFormFields) {
     // 1) API call → เอา data จริง
@@ -105,21 +125,26 @@ console.log(raw);
       Name: form.Name,
       Phone: form.Phone,
       Address_no: form.Address_no,
-        Address_district: form.Address_district,
-        Address_subdistrict: form.Address_subdistrict,
-        Address_province: form.Address_province,
-        Address_zipcode: form.Address_zipcode,
-        Dropdown_value: form.Dropdown_value,
-        Dropdown_mutlple_lv1: form.Dropdown_mutlple_lv1,
-        Dropdown_mutlple_lv2: form.Dropdown_mutlple_lv2,
-        Dropdown_mutlple_lv3: form.Dropdown_mutlple_lv3,
-        Dropdown_mutlple_lv4: form.Dropdown_mutlple_lv4,
-        Dropdown_mutlple_lv5: form.Dropdown_mutlple_lv5,
-        Dropdown_mutlple_lv6: form.Dropdown_mutlple_lv6,
-        Datamasking : form.Datamasking,
+      Address_district: form.Address_district,
+      Address_subdistrict: form.Address_subdistrict,
+      Address_province: form.Address_province,
+      Address_zipcode: form.Address_zipcode,
+      Dropdown_value: form.Dropdown_value,
+      Dropdown_mutlple_lv1: form.Dropdown_mutlple_lv1,
+      Dropdown_mutlple_lv2: form.Dropdown_mutlple_lv2,
+      Dropdown_mutlple_lv3: form.Dropdown_mutlple_lv3,
+      Dropdown_mutlple_lv4: form.Dropdown_mutlple_lv4,
+      Dropdown_mutlple_lv5: form.Dropdown_mutlple_lv5,
+      Dropdown_mutlple_lv6: form.Dropdown_mutlple_lv6,
+      Datamasking : form.Datamasking,
+      Checkbox_TrueFalse : form.Checkbox_TrueFalse ,  
+      Radio : form.Radio ,
+      Datetime : form.Datetime,
+      Date : form.Date,
+      Time : form.Time
         
     });
-
+ 
     // 2) เปิดหน้า
     await page.goto("/contact");
 
@@ -134,10 +159,10 @@ console.log(raw);
     await page.getByLabel("Clear").click();
     await page.getByRole("combobox", { name: "Select End Datetime" }).click();
     await page.getByLabel("Clear").click();
-
+   
     // 6) Search
-    await page.getByRole("button", { name: "Search" }).first().click();
-
+    await page.getByRole('button', { name: 'Search' }).nth(1).click();
+    await page.waitForTimeout(5000)
     // 7) Verify row
     for (const row of contacts) {
       const rowName = [
@@ -159,13 +184,19 @@ console.log(raw);
         row.Dropdown_mutlple_lv4,
         row.Dropdown_mutlple_lv5,
         row.Dropdown_mutlple_lv6,
-        row.Datamasking
+        row.Datamasking , 
+        row.Checkbox_TrueFalse , 
+        row.Radio ,
+        row.Datetime,
+        row.Date,
+        row.Time
       ]
         .filter(Boolean)
         .join(" ");
       
       
       const rows = page.getByRole("row", { name: rowName });
+      console.log(rows);
     expect(await rows.count()).toBeGreaterThan(0);
      
     }

@@ -1,6 +1,6 @@
 import { th } from '@faker-js/faker';
 import { Page, Locator, expect } from '@playwright/test';
- 
+import { selectDateTime } from './FillForm'; 
 export class Element_Contact {
   readonly page: Page;
  //StartDate EndDate
@@ -44,12 +44,12 @@ export class Element_Contact {
   readonly addressZipcode: Locator;
  //Segment
  readonly segmment : Locator;
-
+readonly fill_auto : Locator;
  //Nodatacell
   readonly noDataCell: Locator;
   constructor(page: Page) {
     this.page = page;
-   
+    
     //multiple dropdown
     this.multipledropdownlv1 = page.locator('#dyn_JEFOkL')
     this.multipledropdownlv2 = page.locator('#dyn_ds1WmD')
@@ -139,9 +139,48 @@ export class Element_Contact {
         await this.page.getByRole('option', { name: fields.Dropodown }).click();
     // กด search รอบสอง
     await this.page.getByRole('button', { name: 'Search' }).nth(1).click();
+    await this.page.waitForTimeout(3000)
   }
 
+  async searchBy_Checkbox(fields: {Checkbox?:string }) {
+    await this.btnSearch.click();
+    if (fields.Checkbox) 
+        await this.cleardate();
+        await this.inputCheckbox.click();
+        await this.page.getByRole('option', { name: fields.Checkbox }).click();
+    // กด search รอบสอง
+    await this.page.getByRole('button', { name: 'Search' }).nth(1).click();
+    await this.page.waitForTimeout(3000)
+  }
 
+  async searchBy_Radiobtn(fields: { Radiobtn?:string }) {
+    await this.btnSearch.click();
+    if (fields.Radiobtn) 
+        await this.cleardate();
+        await this.btnRadio.click();
+        await this.page.getByRole('option', { name: fields.Radiobtn }).click();
+       
+    // กด search รอบสอง
+    await this.page.getByRole('button', { name: 'Search' }).nth(1).click();
+    await this.page.waitForTimeout(3000)
+  }
+
+async searchbyDate(fields: { Datetime?:string , Date?:string , Time?:string }) {
+ await this.btnSearch.click();
+    if (fields.Date) 
+        await this.cleardate();
+        await this.btnRadio.click();
+        await this.page.getByRole('option', { name: fields.Datetime }).click();
+    if (fields.Datetime)
+        await this.inputDatetime.fill(fields.Datetime);
+    if (fields.Date)
+        await this.inputDate.fill(fields.Date);
+    if (fields.Time)
+        await this.inputTime.fill(fields.Time);
+    // กด search รอบสอง
+    await this.page.getByRole('button', { name: 'Search' }).nth(1).click();
+    await this.page.waitForTimeout(3000)
+}
  async searchByMultipleDropdown(fields: {
   MultipleDropdownlv1?: string;
   MultipleDropdownlv2?: string;
@@ -178,7 +217,6 @@ export class Element_Contact {
         continue;
       }
     }
-
     // คลิก dropdown และเลือก option
     const dropdownLocator = (this as any)[`multipledropdownlv${i + 1}`];
     console.log(`Selecting ${key}: ${value}`);
@@ -222,5 +260,38 @@ export class Element_Contact {
     await this.page.getByLabel("Clear").click();
     await this.page.getByRole("combobox", { name: "Select End Datetime" }).click();
     await this.page.getByLabel("Clear").click();
+  }
+    async search_datetime(fields: { Datetime?: string  ,Date? :string , Time?:string }) {
+       
+    if (fields.Datetime) {
+      await this.btnSearch.click();
+      // คลิก input ก่อน
+      await this.inputDatetime.click();
+      // เรียก method ของ helper
+
+      await selectDateTime(this.page, fields.Datetime);
+      await this.cleardate();
+       await this.page.getByRole('button', { name: 'Search' }).nth(1).click();
+    }
+    if (fields.Date) {
+      await this.btnSearch.click();
+      // คลิก input ก่อน
+      await this.inputDatetime.click();
+      // เรียก method ของ helper
+
+      await selectDateTime(this.page, fields.Date);
+      await this.cleardate();
+       await this.page.getByRole('button', { name: 'Search' }).nth(1).click();
+    }
+    if (fields.Time) {
+      await this.btnSearch.click();
+      // คลิก input ก่อน
+      await this.inputDatetime.click();
+      // เรียก method ของ helper
+
+      await selectDateTime(this.page, fields.Time);
+      await this.cleardate();
+       await this.page.getByRole('button', { name: 'Search' }).nth(1).click();
+    }
   }
 }

@@ -1,21 +1,22 @@
 import test, { expect, Page, APIRequestContext } from "@playwright/test";
-import { BaseUrl, ContactPage } from "tests/utils";
+import { BaseUrl, ContactPage } from "../../utils";
 import { Element_Contact } from "./Elemenet_Contact";
 import { FillInputContactForm, ContactFormFields } from "./FillForm";
 import { ContactAPI } from "./Global_function";
 
 // function กรอกข้อมูล auto
 
-test('CRM_CT00001 การเข้าหน้า Contact', async ({ page }) => {
+test.only('CRM_CT00001 การเข้าหน้า Contact', async ({ page }) => {
     const contact = new Element_Contact(page);
   await page.goto(BaseUrl + '/contact');
   await expect(contact.btnCreateContact).toBeVisible();
   await expect(contact.btnExport).toBeVisible();
   await expect(contact.btnSearch).toBeVisible();
 });
-test('CRM_CT00002 การเข้าหน้าค้นหาลูกค้า Search', async ({ page }) => {
+test.only('CRM_CT00002 การเข้าหน้าค้นหาลูกค้า Search', async ({ page }) => {
     const contact = new Element_Contact(page);
     await page.goto(BaseUrl + '/contact');
+    await contact.btnSearch.click()
     await expect(contact.inputStartDate).toBeVisible();
     await expect(contact.inputEndDate).toBeVisible();
     await expect(contact.inputName).toBeVisible();
@@ -44,7 +45,7 @@ test('CRM_CT00002 การเข้าหน้าค้นหาลูกค�
     await expect(contact.segmment).toBeVisible();
     
 });  
-test('CRM_CT00003 การค้นหาช่อง Start Datetime', async ({ page }) => {
+test.only('CRM_CT00003 การค้นหาช่อง Start Datetime', async ({ page }) => {
   const now = new Date();
   const formatted = now.toISOString().slice(0, 10) + ' 00:00';
   const mockdate = '2025-11-17 00:00'
@@ -60,7 +61,7 @@ test('CRM_CT00003 การค้นหาช่อง Start Datetime', async ({
    expect(datetimeValue).toBe(mockdate);
    
 });
-test('CRM_CT00004 การค้นหาช่อง End Datetime', async ({ page }) => {
+test.only('CRM_CT00004 การค้นหาช่อง End Datetime', async ({ page }) => {
    const now = new Date();
   const formatted = now.toISOString().slice(0, 10) + ' 23:59';
   const mockdate = '2025-11-17 23:59'
@@ -76,10 +77,10 @@ test('CRM_CT00004 การค้นหาช่อง End Datetime', async ({ p
    expect(datetimeValue).toBe(mockdate);
   
 });
-test('CRM_CT00005   "การค้นหาช่องใส่ Name กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
+test.only('CRM_CT00005   "การค้นหาช่องใส่ Name กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
    await ContactAPI.searchAndVerify(page, request, { Email: "test01@gmail.com" });  
 });
-test('CRM_CT00006   "การค้นหาช่องใส่ Name กรณีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page }) => {
+test.only('CRM_CT00006   "การค้นหาช่องใส่ Name กรณีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page }) => {
     const contact = new Element_Contact(page);  
     await page.goto(BaseUrl + '/contact');
     await contact.btnSearch.click();
@@ -253,7 +254,7 @@ test('CRM_CT00034	"การค้นหาช่องเลือก Collectio
     await contact.expectNoData();
     
 });
-test('CRM_CT00035  "การค้นหาช่องเลือก Collection Level 6 กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page,request }) => {
+test.only('CRM_CT00035  "การค้นหาช่องเลือก Collection Level 6 กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page,request }) => {
     await ContactAPI.searchAndVerify(page, request, 
      {Dropdown_mutlple_lv1:'Level1-1' , 
         Dropdown_mutlple_lv2:'Level2-1-1', 
@@ -277,10 +278,68 @@ test('CRM_CT00036	"การค้นหาช่องเลือก Collectio
     await contact.expectNoData();
     
 });
-test.only('CRM_CT00037	"การค้นหาช่อง Data Masking กรณีมีรายชื่อลูกค้าอยู่ในระบบ"""', async ({ page ,request }) => {
+test('CRM_CT00037	"การค้นหาช่อง Data Masking กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page ,request }) => {
   
     await ContactAPI.searchAndVerify(page, request, { Datamasking: "asking" });  
 });
+test('CRM_CT00038	"การค้นหาช่อง Data Masking กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page ,request }) => {
+  
+   const contact = new Element_Contact(page);  
+    await contact.goto();
+    await contact.searchBy({ Datamasking: 'Tester' });
+    await contact.expectNoData();
+});
+test('CRM_CT00039	"การค้นหาช่อง Check Box กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page ,request }) => {
+  
+    await ContactAPI.searchAndVerify(page, request, { Checkbox_TrueFalse: "true" });  
+});
+test('CRM_CT00040	"การค้นหาช่อง Check Box กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page ,request }) => {
+  
+   const contact = new Element_Contact(page);  
+    await contact.goto();
+    await contact.searchBy_Checkbox({ Checkbox: 'true' });
+    await contact.expectNoData();
+});
+test('CRM_CT00041	"การค้นหาช่อง Radio Button กรณีมีรายชื่อลูกค้าอยู่ในระบบ""', async ({ page ,request }) => {
+  
+    await ContactAPI.searchAndVerify(page, request, { Radio: "value1" });  
+});
+test('CRM_CT00042	"การค้นหาช่อง Radio Button กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ""', async ({ page ,request }) => {
+  
+   const contact = new Element_Contact(page);  
+    await contact.goto();
+    await contact.searchBy_Radiobtn({ Radiobtn: 'value2' });
+    await contact.expectNoData();
+});
+test('CRM_CT00043	"การค้นหาช่อง Date Time กรณีมีรายชื่อลูกค้าอยู่ในระบบ"""', async ({ page ,request }) => {
+  
+    await ContactAPI.searchAndVerify(page, request, { Datetime: "2025-11-13 15:53" });  
+});
+test('CRM_CT00044	"การค้นหาช่อง Date Time กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page  }) => {
+   const contact = new Element_Contact(page);  
+    await contact.goto();
+    await contact.search_datetime({ Datetime: '2025-11-13 15:53' });
+    await contact.expectNoData();
+});
 
+test('CRM_CT00045	"การค้นหาช่อง Date กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page ,request }) => {
+  
+    await ContactAPI.searchAndVerify(page, request, { Date: "2025-11-18" });  
+});
+test('CRM_CT00046	"การค้นหาช่อง Date กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page  }) => {
+   const contact = new Element_Contact(page);  
+    await contact.goto();
+    await contact.search_datetime({ Datetime: '2025-11-13 15:53' });
+    await contact.expectNoData();
+});
+test('CRM_CT00047	"การค้นหาช่อง Time กรณีมีรายชื่อลูกค้าอยู่ในระบบ""', async ({ page ,request }) => {
+  
+    await ContactAPI.searchAndVerify(page, request, { Time: "15:53" });  
+});
+test('CRM_CT00048	"การค้นหาช่อง Time กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page  }) => {
+   const contact = new Element_Contact(page);  
+    await contact.goto();
+    await contact.search_datetime({ Time: '15:53' });
+    await contact.expectNoData();
+});
 
- 
