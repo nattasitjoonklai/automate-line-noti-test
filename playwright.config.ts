@@ -16,7 +16,7 @@ export default defineConfig({
   reporter: "html",
   
   use: {
-    video: "retain-on-failure",
+    video: "on" , //"retain-on-failure",
     baseURL: process.env.CRM_BASE_URL,
     launchOptions: {
       args: ["--start-maximized"],

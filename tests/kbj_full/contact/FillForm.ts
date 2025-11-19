@@ -86,9 +86,11 @@ export const FillInputContactForm = async (page: Page, fields: ContactFormFields
     }
 
     console.log(`Selecting ${key}: ${value}`);
-   
+   await page.waitForTimeout(3000)
     await page.locator(fieldMap[key]).click();
+    await page.waitForTimeout(3000)
     await page.getByRole("option", { name: value }).click();
+    await page.waitForTimeout(3000)
   }
 
   // กรอก textbox / input อื่น ๆ

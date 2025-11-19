@@ -3,19 +3,22 @@ import { BaseUrl, ContactPage } from "../../utils";
 import { Element_Contact } from "./Elemenet_Contact";
 import { FillInputContactForm, ContactFormFields } from "./FillForm";
 import { ContactAPI } from "./Global_function";
+import { Element_Create_Contact } from "./Create_Element";
 
 // function กรอกข้อมูล auto
 
-test.only('CRM_CT00001 การเข้าหน้า Contact', async ({ page }) => {
+test('CRM_CT00001 การเข้าหน้า Contact', async ({ page }) => {
     const contact = new Element_Contact(page);
   await page.goto(BaseUrl + '/contact');
   await expect(contact.btnCreateContact).toBeVisible();
   await expect(contact.btnExport).toBeVisible();
   await expect(contact.btnSearch).toBeVisible();
 });
-test.only('CRM_CT00002 การเข้าหน้าค้นหาลูกค้า Search', async ({ page }) => {
+test('CRM_CT00002 การเข้าหน้าค้นหาลูกค้า Search', async ({ page }) => {
     const contact = new Element_Contact(page);
     await page.goto(BaseUrl + '/contact');
+    await page.waitForLoadState("networkidle");
+    
     await contact.btnSearch.click()
     await expect(contact.inputStartDate).toBeVisible();
     await expect(contact.inputEndDate).toBeVisible();
@@ -45,10 +48,10 @@ test.only('CRM_CT00002 การเข้าหน้าค้นหาลูก
     await expect(contact.segmment).toBeVisible();
     
 });  
-test.only('CRM_CT00003 การค้นหาช่อง Start Datetime', async ({ page }) => {
+test('CRM_CT00003 การค้นหาช่อง Start Datetime', async ({ page }) => {
   const now = new Date();
   const formatted = now.toISOString().slice(0, 10) + ' 00:00';
-  const mockdate = '2025-11-17 00:00'
+  const mockdate = '2025-11-11 00:00'
   console.log(formatted); 
   const contact = new Element_Contact(page);  
   await page.goto(BaseUrl + '/contact');
@@ -56,31 +59,54 @@ test.only('CRM_CT00003 การค้นหาช่อง Start Datetime', asy
   await contact.inputStartDate.click();
   const datetimeValue = await page.getByRole('combobox', { name: 'Select Start Datetime' }).inputValue();
   expect(datetimeValue).toBe(formatted);
+ 
   await page.getByText('11', { exact: true }).click();
-  await page.getByText('123Showing 1 to 15 of 220').click();
-   expect(datetimeValue).toBe(mockdate);
+  const afterValue = await page
+  .getByRole('combobox', { name: 'Select Start Datetime' })
+  .inputValue();
+console.log(afterValue);
+
+  
+    await page.mouse.click(300, 300);
+   expect(afterValue).toBe(mockdate);
+
    
 });
-test.only('CRM_CT00004 การค้นหาช่อง End Datetime', async ({ page }) => {
+test('CRM_CT00004 การค้นหาช่อง End Datetime', async ({ page }) => {
    const now = new Date();
   const formatted = now.toISOString().slice(0, 10) + ' 23:59';
-  const mockdate = '2025-11-17 23:59'
+  // พรุ่งนี้
+const nextDay = new Date(now);
+nextDay.setDate(now.getDate() + 2);
+
+const mockdate =
+  nextDay.toISOString().slice(0, 10) + ' 23:59';
   console.log(formatted); 
+  const nextDayNumber = nextDay.getDate().toString();
   const contact = new Element_Contact(page);  
   await page.goto(BaseUrl + '/contact');
   await contact.btnSearch.click();
-  await contact.inputStartDate.click();
+  await contact.inputEndDate.click();
   const datetimeValue = await page.getByRole('combobox', { name: 'Select End Datetime' }).inputValue();
   expect(datetimeValue).toBe(formatted);
-  await page.getByText('11', { exact: true }).click();
-  await page.getByText('123Showing 1 to 15 of 220').click();
-   expect(datetimeValue).toBe(mockdate);
+  await page.pause()
+  // ❗ อ่านค่าใหม่อีกครั้ง
+  await page.getByRole('gridcell', { name: nextDayNumber }).click()
+ 
+  await page.pause()
+const afterValue = await page
+  .getByRole('combobox', { name: 'Select End Datetime' })
+  .inputValue();
+
+  
+    await page.mouse.click(300, 300);
+   expect(afterValue).toBe(mockdate);
   
 });
-test.only('CRM_CT00005   "การค้นหาช่องใส่ Name กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
+test('CRM_CT00005   "การค้นหาช่องใส่ Name กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
    await ContactAPI.searchAndVerify(page, request, { Email: "test01@gmail.com" });  
 });
-test.only('CRM_CT00006   "การค้นหาช่องใส่ Name กรณีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page }) => {
+test('CRM_CT00006   "การค้นหาช่องใส่ Name กรณีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page }) => {
     const contact = new Element_Contact(page);  
     await page.goto(BaseUrl + '/contact');
     await contact.btnSearch.click();
@@ -254,7 +280,7 @@ test('CRM_CT00034	"การค้นหาช่องเลือก Collectio
     await contact.expectNoData();
     
 });
-test.only('CRM_CT00035  "การค้นหาช่องเลือก Collection Level 6 กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page,request }) => {
+test('CRM_CT00035  "การค้นหาช่องเลือก Collection Level 6 กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page,request }) => {
     await ContactAPI.searchAndVerify(page, request, 
      {Dropdown_mutlple_lv1:'Level1-1' , 
         Dropdown_mutlple_lv2:'Level2-1-1', 
@@ -342,4 +368,198 @@ test('CRM_CT00048	"การค้นหาช่อง Time กรณีมี�
     await contact.search_datetime({ Time: '15:53' });
     await contact.expectNoData();
 });
+test('CRM_CT00049	"การค้นหาช่อง Segment กรณีมีรายชื่อลูกค้าอยู่ในระบบ Fail ""', async ({ page ,request }) => {
+  
+   
+});
+test('CRM_CT00050	"การค้นหาช่อง Segment กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ Fail ""', async ({ page  }) => {
+   const contact = new Element_Contact(page);  
+    await contact.goto();
+    await contact.search_datetime({ Time: '15:53' });
+    await contact.expectNoData();
+});
 
+test('CRM_CT00051	การค้นหาข้อมูล (ปุ่มSearch) ""', async ({ page  }) => {
+   const contact = new Element_Contact(page);  
+    await contact.goto();
+    await contact.search_datetime({ Time: '15:53' });
+    await contact.expectNoData();
+});
+test('CRM_CT00052	"การค้นหาข้อมูล (ปุ่มSearch) กรณีไม่มีข้อมูลรายชื่อลูกค้าที่ Search" ', async ({ page  }) => {
+   const contact = new Element_Contact(page);  
+    await contact.goto();
+    await contact.search_datetime({ Time: '15:53' });
+    await contact.expectNoData();
+});
+test('CRM_CT00053	การล้างข้อมูลที่กรอก (ปุ่มClear)" Fail ', async ({ page  }) => {
+   const contact = new Element_Contact(page);  
+   await contact.goto()
+   await contact.searchBy({ 
+    Name : " ทดสอบ" , 
+    Phone: '12312312' ,
+    Email :'test01@gmail.com' ,
+    Datamasking : 'ทดสอบ' , 
+    Address_no :'1111',
+    Address_subdistrict : 'ทดสอบ',
+    Address_district :'test',
+    Address_province :'ทดสอบ',
+    Address_zipcode : '5555',
+    search:  false
+} );
+    await contact.searchBy_Dropdown({Dropodown:'ทดสอบตัวเลือก 1',search:false,btn_search:false})
+    await contact.searchByMultipleDropdown ({MultipleDropdownlv1:'Level1-1' , 
+        MultipleDropdownlv2:'Level2-1-1', 
+        MultipleDropdownlv3:'Level3-1-1',
+        MultipleDropdownlv4:'Level 4_3_1_1',
+        MultipleDropdownlv5:'Level 5_4_3_2_1',
+        MultipleDropdownlv6:'Level 6_5_4_3_1_1',
+        search: false,
+        btn_search : false
+      }); 
+    await contact.searchBy_Checkbox({Checkbox:'true',search :false, btn_search:false})
+    await contact.searchBy_Radiobtn({Radiobtn:'value1',search:false,btn_search:false})
+    await contact.search_datetime({Datetime:'2025-11-19 16:05' ,btn_search:false , search: false})
+    await contact.search_datetime({Date:'2025-11-19',btn_search:false ,search :false})
+    await contact.search_datetime({Time:'16:06',btn_search :false , search :false})
+        
+    });
+    
+    test('CRM_CT00054	การสร้้างรายชื่อลูกค้า (Create Contact)" ', async ({ page  }) => {
+   const contact = new Element_Create_Contact(page);  
+    await contact.goto();
+    await contact.btnCreateContact.click()
+   
+   
+    await expect(contact.inputName).toBeVisible();
+    await expect(contact.dropdown).toBeVisible();
+    await expect(contact.multipledropdownlv1).toBeVisible();
+    await expect(contact.multipledropdownlv2).toBeVisible();
+    await expect(contact.multipledropdownlv3).toBeVisible();
+    await expect(contact.multipledropdownlv4).toBeVisible();
+    await expect(contact.multipledropdownlv5).toBeVisible();
+    await expect(contact.multipledropdownlv6).toBeVisible();
+    await expect(contact.inputPhone).toBeVisible();
+    await expect(contact.inputEmail).toBeVisible();
+    await expect(contact.inputDatemasking).toBeVisible();
+    await expect(contact.inputCheckbox).toBeVisible();
+    await expect(contact.btnRadio).toBeVisible();
+    await expect(contact.inputDate).toBeVisible();
+    await expect(contact.inputDatetime).toBeVisible();
+    await expect(contact.inputTime).toBeVisible();
+    
+});
+test('CRM_CT00055	การใส่ข้อมูลช่อง NameCRM_CT00055 การใส่ข้อมูลช่อง Name" ', async ({ page  }) => {
+   const contact = new Element_Create_Contact(page);  
+    await contact.goto();
+    await contact.btnCreateContact.click()
+   
+   await contact.inputName.fill('ทดสอบ')
+   await expect(contact.inputName).toHaveValue('ทดสอบ');
+    
+});
+test('CRM_CT00056	"การใส่ข้อมูลช่อง Name กรณีไม่่ใส่ Name " ', async ({ page  }) => {
+   const contact = new Element_Create_Contact(page);  
+    await contact.goto();
+    await contact.btnCreateContact.click()
+   
+   await contact.submmit_contact.click()
+   await expect(contact.error_msg_empty).toBeVisible();
+   
+    
+});
+test('CRM_CT00057	การใส่ข้อมูลช่อง Phone" ', async ({ page  }) => {
+   const contact = new Element_Create_Contact(page);  
+    await contact.goto();
+    await contact.btnCreateContact.click()
+   
+   await contact.inputPhone.fill('0917777')
+   await expect(contact.inputPhone).toHaveValue('0917777');
+    
+});
+test('CRM_CT00058	"การใส่ข้อมูลช่อง Phone กรณีใส่ตัวอักษรหรืออักขระพิเศษ" " ', async ({ page  }) => {
+   const contact = new Element_Create_Contact(page);  
+    await contact.goto();
+    await contact.btnCreateContact.click()
+    await contact.inputPhone.fill('sadsada')
+    await page.pause()
+     await contact.submmit_contact.click()
+    const visible = await contact.error_msg_val.isVisible(); // ต้องเป็น Locator
+    expect(visible).toBe(true);
+    
+});
+test('CRM_CT00059	"การใส่ข้อมูลช่อง Phone กรณีไม่ใส่ข้อมูล " " ', async ({ page  }) => {
+   const contact = new Element_Create_Contact(page);  
+    await contact.goto();
+    await contact.btnCreateContact.click()
+    await contact.inputName.fill('1231456')
+     await contact.submmit_contact.click()
+    const visible = await contact.error_msg_empty.isVisible(); // ต้องเป็น Locator
+    expect(visible).toBe(true);
+    
+});
+test('CRM_CT00060	การเพิ่มช่องใส่ Phone (ปุ่มAdd Phone)" " ', async ({ page  }) => {
+   const contact = new Element_Create_Contact(page);  
+    await contact.goto();
+    await contact.btnCreateContact.click()
+     await page.getByRole('button', { name: 'Add Phone' }).click();
+  await page.locator('#dyn_phone_1').click();
+  await page.locator('#dyn_phone_1').fill('231231313');
+    await expect(page.locator('#dyn_phone_1')).toHaveValue('231231313');
+});
+test('CRM_CT00061	การใส่ข้อมูลช่อง Email " ', async ({ page  }) => {
+   const contact = new Element_Create_Contact(page);  
+    await contact.goto();
+    await contact.btnCreateContact.click()
+    await contact.inputEmail.fill('nattasit@cloudsoft.co.th')
+    await expect(contact.inputEmail).toHaveValue('nattasit@cloudsoft.co.th')
+});
+test('CRM_CT00062	"การใส่ข้อมูลช่อง Email กรณีกรอกไม่ตรงรูปแบบ Email " " ', async ({ page  }) => {
+   const contact = new Element_Create_Contact(page);  
+    await contact.goto();
+    await contact.btnCreateContact.click()
+    await contact.inputEmail.fill('Admintest@mail')
+    const visible = await contact.error_msg_email_valid.isVisible(); // ต้องเป็น Locator
+    expect(visible).toBe(true);
+    await page.pause()
+});
+test('CRM_CT00063	การเพิ่มข้อมูลที่อยู่ (ปุ่ม Add Address)" " ', async ({ page  }) => {
+   const contact = new Element_Create_Contact(page);  
+    await contact.goto();
+    await contact.btnCreateContact.click()
+      await page.pause()
+   await contact.btn_address.click()
+   expect (contact.input_address).toBeVisible()
+   expect (contact.addressDistrict).toBeVisible()
+   expect (contact.addressSubDistrict).toBeVisible()
+   expect (contact.addressZipcode).toBeVisible()
+  
+
+});
+test('CRM_CT00064	"การใส่ข้อมูลช่อง Address ที่อยู่ " ', async ({ page  }) => {
+   const contact = new Element_Create_Contact(page);  
+    await contact.goto();
+    await contact.btnCreateContact.click()
+   
+   await contact.btn_address.click();
+   await contact.input_address.fill('ทดสอบการใส่ที่อยู')
+   expect (contact.input_address).toHaveValue('ทดสอบการใส่ที่อยู')
+   
+
+});
+test.only('CRM_CT00065	กรณีค้นหา ตำบล/แขวง ต้องใส่ตัวอักษรที่อยู่ในdropdown ข้อมูลสถานที่ถึงแสดง" ', async ({ page  }) => {
+   const contact = new Element_Create_Contact(page);  
+    await contact.goto();
+    await contact.btnCreateContact.click()
+     
+   await contact.btn_address.click();
+   await page.waitForTimeout(1000)
+    await page.getByRole('combobox', { name: 'ค้นหา ตำบล/แขวง' }).fill('หลักสอง');
+ 
+    await page.waitForTimeout(1000)
+       await page.locator('.grid.grid-cols-2 > div:nth-child(2) > #dropdownEl > .relative > .w-8').click()
+  await page.getByText('หลักสอง » บางแค » กรุงเทพมหานคร »').click();
+   await page.pause()
+   
+   
+
+});

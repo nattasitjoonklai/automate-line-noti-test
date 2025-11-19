@@ -1,7 +1,7 @@
 import { fa, th } from '@faker-js/faker';
 import { Page, Locator, expect } from '@playwright/test';
 import { selectDateTime } from './FillForm'; 
-export class Element_Contact {
+export class Element_Create_Contact {
   readonly page: Page;
  //StartDate EndDate
     readonly input_startdate : Locator;
@@ -42,24 +42,37 @@ export class Element_Contact {
   readonly addressSubDistrict: Locator;
   readonly addressProvince: Locator;
   readonly addressZipcode: Locator;
+  readonly submmit_contact:Locator;
  //Segment
  readonly segmment : Locator;
 readonly fill_auto : Locator;
+
+readonly error_msg_empty:  Locator;
+readonly error_msg_val:Locator;
+readonly error_msg_email_valid :Locator;
+
+readonly input_address : Locator;
+readonly btn_address :Locator ; 
  //Nodatacell
   readonly noDataCell: Locator;
-  constructor(page: Page) {
+  constructor(page: Page) { 
     this.page = page;
-    
+    this.btn_address =page.getByRole('button', { name: 'Add Address' })
+    this.input_address = page.locator('#dyn_address_0');
+    this.submmit_contact= page.getByRole('button', { name: 'Create', exact: true })
+    this.error_msg_empty =page.getByText('Value is required')
+    this.error_msg_val = page.getByText('Value is not an integer')
+    this.error_msg_email_valid =page.getByText('Value is not a valid email')
     //multiple dropdown
-    this.multipledropdownlv1 = page.locator('#dyn_JEFOkL')
-    this.multipledropdownlv2 = page.locator('#dyn_ds1WmD')
-    this.multipledropdownlv3 = page.locator('#dyn_kGCQa0')
-    this.multipledropdownlv4 = page.locator('#dyn_Rtp6MP')
-    this.multipledropdownlv5 = page.locator('#dyn_BI5q7i')
-    this.multipledropdownlv6 = page.locator('#dyn_fKpu0q')
+    this.multipledropdownlv1 = page.locator('#dyn_JEFOkL').nth(1)
+    this.multipledropdownlv2 = page.locator('#dyn_ds1WmD').nth(1)
+    this.multipledropdownlv3 = page.locator('#dyn_kGCQa0').nth(1)
+    this.multipledropdownlv4 = page.locator('#dyn_Rtp6MP').nth(1)
+    this.multipledropdownlv5 = page.locator('#dyn_BI5q7i').nth(1)
+    this.multipledropdownlv6 = page.locator('#dyn_fKpu0q').nth(1)
  
     //Dropdown
-     this.dropdown = page.locator('#dyn_dropdownkey')
+     this.dropdown = page.locator('#dyn_dropdownkey').nth(1)
     // Buttons
     this.btnCreateContact = page.getByRole('button', { name: 'Create Contact' });
     this.btnExport = page.getByRole('button', { name: 'Export' });
@@ -69,25 +82,25 @@ readonly fill_auto : Locator;
     // Inputs
     this.inputStartDate = page.locator('#start_datetime')
     this.inputEndDate = page.locator('#end_datetime')
-    this.inputName = page.locator('#dyn_name')
+    this.inputName = page.locator('#dyn_name').nth(1)
     
     // this.inputLastName = page.getByRole('textbox', { name: 'Enter your Email' });
     // this.inputCheckbox = page.getByRole('combobox', { name: 'Select checkbox' })
-    this.inputPhone = page.locator('#dyn_phone')
-    this.inputEmail = page.locator('#dyn_email')
-    this.inputDatemasking =page.locator('#dyn_datamasking')
-    this.inputCheckbox = page.locator('#dyn_chkbox')
-    this.btnRadio = page.locator('#dyn_radiobtn')
-    this.inputText = page.getByRole('textbox', { name: 'Enter your textinput' })
-    this.inputDatetime  = page.locator('#dyn_feu1')
-    this.inputDate =  page.locator('#dyn_R8i6Yo')
-    this.inputTime = page.locator('#dyn_yC3zrN')
+    this.inputPhone = page.locator('#dyn_phone_0')
+    this.inputEmail = page.locator('#dyn_email').nth(1)
+    this.inputDatemasking =page.locator('#dyn_datamasking').nth(1)
+    this.inputCheckbox = page.locator('#dyn_chkbox').nth(1)
+    this.btnRadio = page.locator('#dyn_radiobtn').nth(1)
+    this.inputText = page.getByRole('textbox', { name: 'Enter your textinput' }).nth(1)
+    this.inputDatetime  = page.locator('#dyn_feu1').nth(1)
+    this.inputDate =  page.locator('#dyn_R8i6Yo').nth(1)
+    this.inputTime = page.locator('#dyn_yC3zrN').nth(1)
     // Address
-   this.addressNo = page.locator('#dyn_address.address').first().or(page.getByRole('textbox', { name: 'Enter your ที่อยู่/บ้านเลขที่' })).first();
-    this.addressDistrict = page.locator('#dyn_address.address').first().or(page.getByRole('textbox', { name: 'Enter your อำเภอ / เขต' })).first()
-    this.addressSubDistrict = page.locator('#dyn_address.subdistrict').first().or(page.getByRole('textbox', { name: 'Enter your ตำบล/แขวง' })).first()
-    this.addressProvince = page.locator('#dyn_address.province').first().or(page.getByRole('textbox', { name: 'Enter your จังหวัด' })).first()
-    this.addressZipcode = page.locator('#dyn_address.zipcode').first().or(page.getByRole('textbox', { name: 'Enter your รหัสไปรษณีย์' })).first()
+   this.addressNo = page.locator('#dyn_address.address').nth(1).or(page.getByRole('textbox', { name: 'Enter your ที่อยู่/บ้านเลขที่' })).nth(1)
+    this.addressDistrict = page.locator('#dyn_address.address').nth(1).or(page.getByRole('textbox', { name: 'Enter your อำเภอ / เขต' })).nth(1).or(page.locator('#dyn_district_0').getByRole('combobox', { name: 'ค้นหา อำเภอ / เขต' }))
+    this.addressSubDistrict = page.locator('#dyn_address.subdistrict').nth(1).or(page.getByRole('textbox', { name: 'Enter your ตำบล/แขวง' })).nth(1).or(page.locator('#dyn_subdistrict_0').getByRole('combobox', { name: 'ค้นหา ตำบล/แขวง' }));
+    this.addressProvince = page.locator('#dyn_address.province').nth(1).or(page.getByRole('textbox', { name: 'Enter your จังหวัด' })).nth(1).or(page.locator('#dyn_province_0').getByRole('combobox', { name: 'ค้นหา จังหวัด' }))
+    this.addressZipcode = page.locator('#dyn_address.zipcode').nth(1).or(page.getByRole('textbox', { name: 'Enter your รหัสไปรษณีย์' })).nth(1).or(page.locator('#dyn_zipcode_0').getByRole('combobox', { name: 'ค้นหา รหัสไปรษณีย์' }))
     //Segment
     this.segmment = page.locator ('#dyn_segment')
     //

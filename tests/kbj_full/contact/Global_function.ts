@@ -32,7 +32,7 @@ export type SearchParams = {
 };
  let json_data: any = {};  
 export class ContactAPI {
-  static token = "k6BHq2LvhSGxPBzwQ0Aj5uQ1uITeMrmA1XQH8R9oLwVtOSeKMzcs8EtnlrPZ-qU64s8SNmoGleaIsXEyh0ngNCG7gnl-tyiS6xtz_Qm9kCn-HBzG"; // <<-- คุณใส่ token ไว้ที่นี่ครั้งเดียว
+  static token = "xHFsEcpsvDUL1rqapX1kf3XwIc8Q9KxkR1Zc4GHn94cHmpGrdbwEaUFCnokrXHWsEgMWdepmKUtdvrN-pFXnR9D3k765tnP5UPEhYLj0V9x-8yhR"; // <<-- คุณใส่ token ไว้ที่นี่ครั้งเดียว
 
   static async fetchContacts(request: APIRequestContext, params: SearchParams ) {
     const apiParams: Record<string, string> = {
@@ -67,7 +67,7 @@ export class ContactAPI {
     if(params.Time) apiParams["data.yC3zrN"] = params.Time;
 
      const query = new URLSearchParams(apiParams).toString();
-console.log(query);
+
 
     const apiResponse = await request.get(
       `https://api-dev.cloudcentric.app/api/contacts/filter?${query}`,
@@ -81,39 +81,44 @@ console.log(query);
     );
 
      json_data = await apiResponse.json();
-    console.log(json_data);
+   
     
     
     const raw = json_data?.data?.data ?? [];
-    console.log(raw);
     
-    return raw.map((item: any) => ({
-      Name: item.name,
-      NationalID: item.national_id,
-      CustomerID: item.customer_id,
-      Email: item.email,
-      CaseBasic: item.case_basic,
-      Phone: item.phone,
-        Address_no: item.address?.no,
-        Address_district: item.address?.district,
-        Address_subdistrict: item.address?.subdistrict,
-        Address_province: item.address?.province,
-        Address_zipcode: item.address?.zipcode,
-        Dropdown_value: item.dropdownkey,
-        Dropdown_mutlple_lv1: item.JEFOkL,
-        Dropdown_mutlple_lv2: item.ds1WmD,
-        Dropdown_mutlple_lv3: item.kGCQa0,
-        Dropdown_mutlple_lv4: item.fKpu0q,
-        Dropdown_mutlple_lv5: item.BI5q7i,
-        Dropdown_mutlple_lv6: item.Rtp6MP,
-        Datamasking : item.datamasking,
-        Checkbox_TrueFalse : item.chkbox  ,
-        Radio : item.radiobtn ,
-        Datetime : item.feu1,
-        Date : item.R8i6Yo,
-        Time : item.yC3zrN
-    })) as ContactFormFields[]
+    const contacts: ContactFormFields[] = raw.map((item: any) => {
+ 
+
+  return {
+    Name: item.data.name ?? '',
+    Dropdown_value: item.data.dropdownkey ?? '',
+    Dropdown_mutlple_lv1: item.data.JEFOkL ?? '',
+    Dropdown_mutlple_lv2: item.data.ds1WmD ?? '',
+    Dropdown_mutlple_lv3: item.data.kGCQa0 ?? '',
+    Dropdown_mutlple_lv4: item.data.Rtp6MP ?? '',
+    Dropdown_mutlple_lv5: item.data.BI5q7i ?? '',
+    Dropdown_mutlple_lv6: item.data.fKpu0q ?? '',
+    Phone: item.data['phone']?.join(', ') ?? '',
+    Email: item.data.email ?? '',
+    DataMarking : item.data.datamasking ?? '' , 
+    Checkbox_TrueFalse: item.data.chkbox ?? false,
+    Radio: item.data.radiobtn ?? '',
+    Datetime: item.data.feu1 ?? '',
+    Date: item.data.R8i6Yo ?? '',
+    Time: item.data.yC3zrN ?? '',
+    Address_no: item.data.address?.[0]?.address ?? '',
+    Address_district: item.data.address?.[0]?.district ?? '',
+    Address_subdistrict: item.data.address?.[0]?.subdistrict ?? '',
+    Address_province: item.data.address?.[0]?.province ?? '',
+    Address_zipcode: item.data.address?.[0]?.zipcode ?? '',
    
+    Datamasking: item.data.datamasking ?? '',
+    
+  };
+});
+
+
+    return contacts;
   }
   // 🔥 รวมทุกอย่างให้เหลือบรรทัดเดียวใน test
   static async searchAndVerify(page: Page, request: APIRequestContext, form: ContactFormFields) {
@@ -130,6 +135,7 @@ console.log(query);
       Address_province: form.Address_province,
       Address_zipcode: form.Address_zipcode,
       Dropdown_value: form.Dropdown_value,
+
       Dropdown_mutlple_lv1: form.Dropdown_mutlple_lv1,
       Dropdown_mutlple_lv2: form.Dropdown_mutlple_lv2,
       Dropdown_mutlple_lv3: form.Dropdown_mutlple_lv3,
@@ -163,42 +169,91 @@ console.log(query);
     // 6) Search
     await page.getByRole('button', { name: 'Search' }).nth(1).click();
     await page.waitForTimeout(5000)
-    // 7) Verify row
-    for (const row of contacts) {
-      const rowName = [
-        row.Name,
-        row.NationalID,
-        row.CustomerID,
-        row.Email,
-        row.CaseBasic,
-        row.Phone,
-        row.Address_no,
-        row.Address_district,
-        row.Address_subdistrict,
-        row.Address_province,
-        row.Address_zipcode,
-        row.Dropdown_value , 
-        row.Dropdown_mutlple_lv1,
-        row.Dropdown_mutlple_lv2,
-        row.Dropdown_mutlple_lv3,
-        row.Dropdown_mutlple_lv4,
-        row.Dropdown_mutlple_lv5,
-        row.Dropdown_mutlple_lv6,
-        row.Datamasking , 
-        row.Checkbox_TrueFalse , 
-        row.Radio ,
-        row.Datetime,
-        row.Date,
-        row.Time
-      ]
-        .filter(Boolean)
-        .join(" ");
-      
-      
-      const rows = page.getByRole("row", { name: rowName });
-      console.log(rows);
-    expect(await rows.count()).toBeGreaterThan(0);
-     
-    }
-  }
+    await page.pause
+// 1) ดึง rows จาก table
+const rows = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]');
+await page.waitForTimeout(2000);
+
+const count = await rows.count();
+
+
+const tableContacts: any[] = [];
+
+for (let i = 0; i < count; i++) {
+    const row = rows.nth(i);
+
+    const contact = {
+        Name: await row.locator('#dyn_row_name').innerText(),
+        Dropdown: await row.locator('#dyn_row_dropdownkey').innerText(),
+
+        Dropdown_mutlple_lv1: await row.locator('[id^="dyn_row_JEFOkL"]').innerText(),
+        Dropdown_mutlple_lv2: await row.locator('[id^="dyn_row_ds1WmD"]').innerText(),
+        Dropdown_mutlple_lv3: await row.locator('[id^="dyn_row_kGCQa0"]').innerText(),
+        Dropdown_mutlple_lv4: await row.locator('[id^="dyn_row_Rtp6MP"]').innerText(),
+        Dropdown_mutlple_lv5: await row.locator('[id^="dyn_row_BI5q7i"]').innerText(),
+        Dropdown_mutlple_lv6: await row.locator('[id^="dyn_row_fKpu"]').innerText(),
+
+        Phone: await row.locator('#dyn_row_phone').innerText(),
+        Email: await row.locator('#dyn_row_email').innerText(),
+        Datamasking: await row.locator('#dyn_row_datamasking').innerText(),
+        Checkbox_TrueFalse: await row.locator('#dyn_row_chkbox').innerText(),
+        Radiobtn: await row.locator('#dyn_row_radiobtn').innerText(),
+        Datetime: await row.locator('#dyn_row_feu1').innerText(),
+        Date: await row.locator('#dyn_row_R8i6Yo').innerText(),
+        Time: await row.locator('#dyn_row_yC3zrN').innerText(),
+
+        Address: await row.locator('#dyn_row_address').innerText()
+    };
+
+    tableContacts.push(contact);
+}
+
+// -----------------------------------------------------------
+// 2) เทียบกับ API contacts ทั้งหมด (contacts)
+// -----------------------------------------------------------
+
+for (const apiContact of contacts) {
+
+    console.log("===== API CONTACT =====");
+    console.log("Name:", apiContact.Name);
+    console.log("Dropdown:", apiContact.Dropdown_value);
+    console.log("LV1:", apiContact.Dropdown_mutlple_lv1);
+    console.log("LV2:", apiContact.Dropdown_mutlple_lv2);
+    console.log("LV3:", apiContact.Dropdown_mutlple_lv3);
+    console.log("LV4:", apiContact.Dropdown_mutlple_lv4);
+    console.log("LV5:", apiContact.Dropdown_mutlple_lv5);
+    console.log("LV6:", apiContact.Dropdown_mutlple_lv6);
+    console.log("Phone:", apiContact.Phone);
+    console.log("Email:", apiContact.Email);
+    console.log("Datetime:", apiContact.Datetime);
+
+    const found = tableContacts.some(row => {
+
+        console.log("---- TABLE ROW ----");
+        console.log("Name:", row.Name);
+        console.log("Dropdown:", row.Dropdown);
+        console.log("LV1:", row.Dropdown_mutlple_lv1);
+        console.log("LV2:", row.Dropdown_mutlple_lv2);
+        console.log("LV3:", row.Dropdown_mutlple_lv3);
+        console.log("LV4:", row.Dropdown_mutlple_lv4);
+        console.log("LV5:", row.Dropdown_mutlple_lv5);
+        console.log("LV6:", row.Dropdown_mutlple_lv6);
+        console.log("Phone:", row.Phone);
+        console.log("Email:", row.Email);
+        console.log("Datetime:", row.Datetime);
+        console.log("Address:", row.Address);
+
+        return (
+            row.Name.trim() === apiContact.Name &&
+            row.Email.trim() === apiContact.Email &&
+            row.Phone.trim() === apiContact.Phone
+
+        );
+    });
+
+    console.log("FOUND?", found);
+    expect(found).toBeTruthy();
+}
+}
+
 }
