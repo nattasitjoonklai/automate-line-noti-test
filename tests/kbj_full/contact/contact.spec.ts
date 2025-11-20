@@ -558,8 +558,18 @@ test.only('CRM_CT00065	กรณีค้นหา ตำบล/แขวง ต
     await page.waitForTimeout(1000)
        await page.locator('.grid.grid-cols-2 > div:nth-child(2) > #dropdownEl > .relative > .w-8').click()
   await page.getByText('หลักสอง » บางแค » กรุงเทพมหานคร »').click();
-   await page.pause()
-   
-   
-
+   await page.pause()   
+});
+test.only('CRM_CT00066	กรณีค้นหา อำเภอ/เขต ต้องใส่ตัวอักษรที่อยู่ในdropdown ข้อมูลสถานที่ถึงแสดง" ', async ({ page  }) => {
+   const contact = new Element_Create_Contact(page);  
+    await contact.goto();
+    await contact.btnCreateContact.click()
+     
+   await contact.btn_address.click();
+   await page.waitForTimeout(1000)
+    await page.getByRole('combobox', { name: 'ค้นหา อำเภอ/เขต' }).fill('บางแค');
+    await page.waitForTimeout(1000)
+       await page.locator('.grid.grid-cols-2 > div:nth-child(2) > #dropdownEl > .relative > .w-8').click()
+  await page.getByText('บางแค » บางแค » กรุงเทพมหานคร »').click();
+   await page.pause()   
 });
