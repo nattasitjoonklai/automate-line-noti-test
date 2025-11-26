@@ -118,7 +118,7 @@ readonly fill_auto : Locator;
    // Generic search
   async searchBy(fields: { Name?: string; Phone?: string; Email?: string , Address_no?: string  , Address_district?: string , Address_subdistrict?: string , Address_province?: string , Address_zipcode?: string , Datamasking ?: string  ,  search?: boolean,}) {
      // ✅ ถ้า fields.search === false → ไม่ต้องกดปุ่ม search
-  const shouldSearch = fields.search !== false;
+  
   await this.btnSearch.click();
     if (fields.Address_no) await this.addressNo.fill(fields.Address_no);
     if (fields.Address_district) await this.addressDistrict.fill(fields.Address_district);
@@ -129,6 +129,7 @@ readonly fill_auto : Locator;
     if (fields.Phone) await this.inputPhone.fill(fields.Phone);
     if (fields.Email) await this.inputEmail.fill(fields.Email);
     if (fields.Datamasking) await this.inputDatemasking.fill(fields.Datamasking);
+    
      // 🔍 ถ้าต้อง search ปกติ ให้กดรอบสอง
   if (fields.search !== false) {
     await this.page.getByRole('button', { name: 'Search' }).nth(1).click();

@@ -2,7 +2,6 @@ import { defineConfig, devices } from "@playwright/test";
 import dotenv from "dotenv";
 import path from "path";
 
-// โหลด environment variables
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 const Parallel = false;
@@ -14,67 +13,28 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: 1,
   reporter: "html",
-  
+
   use: {
-    video: "on" , //"retain-on-failure",
+    video: "on",
     baseURL: process.env.CRM_BASE_URL,
-    launchOptions: {
-      args: ["--start-maximized"],
-    },
+    launchOptions: { args: ["--start-maximized"] },
     trace: "on-first-retry",
-     headless: false,          
+    headless: false,
   },
 
   projects: [
     // ----------------------------
-    // Setup project
+    // Setup project (login_template.ts)
     // ----------------------------
     {
       name: "kbj_full_template_setup",
       use: {
         viewport: { width: 1920, height: 1080 },
       },
-      testMatch: '**/*.template.ts',
+      // ให้รัน login_template.ts ตรงนี้
+      testMatch: "template/login_template.ts",
+      testIgnore: [],   // ปิด ignore default
     },
-
-    // ----------------------------
-    // Test Login Flow
-    // ----------------------------
-    // {
-    //   name: "login",
-    //   use: {
-    //     ...devices["Desktop Chrome"],
-    //     storageState: undefined,
-    //   },
-    //   testMatch: '**/*login*.spec.ts',
-    //   fullyParallel: Parallel,
-    // },
-
-    // ----------------------------
-    // Test New Contact Flow
-    // ----------------------------
-    // {
-    //   name: "new_contact",
-    //   use: {
-    //     ...devices["Desktop Chrome"],
-    //     storageState: "playwright/.template/kbj_full.json",
-    //   },
-    //   testMatch: '**/*new_contact*.spec.ts',
-    //   fullyParallel: Parallel,
-    // },
-
-    // ----------------------------
-    // Test Exist Contact Flow
-    // ----------------------------
-    // {
-    //   name: "exist_contact",
-    //   use: {
-    //     ...devices["Desktop Chrome"],
-    //     storageState: "playwright/.template/kbj_full.json",
-    //   },
-    //   testMatch: '**/*exist_contact*.spec.ts',
-    //   fullyParallel: Parallel,
-    // },
 
     // ----------------------------
     // Test Contact Flow

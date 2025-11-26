@@ -257,3 +257,53 @@ for (const apiContact of contacts) {
 }
 
 }
+
+// ตรวจสอบว่าข้อมูลที่สร้าง ตรงกับแถวบนสุดของตารางหรือไม่
+export async function verifyTopTableRow(page, expected: { Name?: string, Phone?: string, Email?: string , CheckDelete?:String , CheckView?:string,CheckEdit?:string}) {
+  const firstRow = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').first();
+
+  if(expected.CheckView){
+    
+  await page.getByRole('row', { name: expected.CheckView }).locator('#dyn_row_action').click();
+  await page.getByRole('menuitem', { name: 'View' }).click();
+  }
+  if(expected.CheckEdit){
+    
+  await page.getByRole('row', { name: expected.CheckEdit }).locator('#dyn_row_action').click();
+  await page.getByRole('menuitem', { name: 'Edit' }).click();
+  }
+  if(expected.CheckDelete){
+    
+   
+    const row = page.locator('#dyn_contactTable tr').filter({ hasText: expected.CheckDelete });
+  await row.locator('#dyn_row_isSelected').click();
+ await page.getByRole('button', { name: /Delete Contact/ }).click();
+  await page.getByRole('button', { name: 'Delete', exact: true }).click();
+  // ตรวจสอบว่า row หายไป
+await expect(page.locator('#dyn_contactTable tr').filter({ hasText: expected.CheckDelete  })).toHaveCount(0);
+  }
+  if (expected.Name) {
+    const nameCell = await firstRow.locator('td').nth(1).textContent();
+    console.log('แถวบนสุด Name:', nameCell?.trim());
+    await expect(nameCell?.trim()).toBe(expected.Name);
+  }
+
+  if (expected.Phone) {
+    const rows = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]');
+
+    const matchedRow = rows.filter({
+  has: page.locator('td').nth(1).filter({ hasText: expected.Name })
+});
+    const phoneCell = await matchedRow.locator('td').nth(9).textContent();
+   
+    console.log('แถวบนสุด Phone:', phoneCell?.trim());
+    
+    await expect(phoneCell?.trim()).toBe(expected.Phone);
+  }
+
+  if (expected.Email) {
+    const emailCell = await firstRow.locator('td').nth(3).textContent();
+    console.log('แถวบนสุด Email:', emailCell?.trim());
+    await expect(emailCell?.trim()).toBe(expected.Email);
+  }
+}
