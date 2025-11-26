@@ -9,23 +9,24 @@ export type ContactFormFields = {
   CaseBasic?: string;
   Phone?: string;
   Address_no?: string;
-    Address_district?: string;
-    Address_subdistrict?: string;
-    Address_province?: string;
-    Address_zipcode?: string;
-    Dropdown_value? :string;
-    Dropdown_mutlple_lv1?: string;
-    Dropdown_mutlple_lv2?: string;
-    Dropdown_mutlple_lv3?: string;
-    Dropdown_mutlple_lv4?: string;
-    Dropdown_mutlple_lv5?: string;
-    Dropdown_mutlple_lv6?: string;
-    Datamasking ?: string;
-    Checkbox_TrueFalse ?: string;
-    Radio ?: string;
-    Datetime ?: string;
-    Date ?: string;
-    Time ?: string; 
+  Address_district?: string;
+  Address_subdistrict?: string;
+  Address_province?: string;
+  Address_zipcode?: string;
+  Dropdown_value?: string;
+  Dropdown_mutlple_lv1?: string;
+  Dropdown_mutlple_lv2?: string;
+  Dropdown_mutlple_lv3?: string;
+  Dropdown_mutlple_lv4?: string;
+  Dropdown_mutlple_lv5?: string;
+  Dropdown_mutlple_lv6?: string;
+  Datamasking?: string;
+  Text_input?: string;
+  Checkbox_TrueFalse?: string;
+  Radio?: string;
+  Datetime?: string;
+  Date?: string;
+  Time?: string;
 };
 
 // function กรอกข้อมูล auto
@@ -48,12 +49,13 @@ export const fieldMap: Record<keyof ContactFormFields, string> = {
   Dropdown_mutlple_lv4: `#dyn_Rtp6MP`,
   Dropdown_mutlple_lv5: `#dyn_BI5q7i`,
   Dropdown_mutlple_lv6: `#dyn_fKpu0q`,
-  Datamasking : `Enter your Data Masking`,
-  Checkbox_TrueFalse :'#dyn_chkbox',
-  Radio : '#dyn_radiobtn'  , 
-  Datetime : `#dyn_feu1`,
-  Date : `#dyn_R8i6Yo`,
-  Time : `#dyn_yC3zrN`
+  Datamasking: `Enter your Data Masking`,
+  Text_input: `Enter your textinput`,
+  Checkbox_TrueFalse: '#dyn_chkbox',
+  Radio: '#dyn_radiobtn',
+  Datetime: `#dyn_feu1`,
+  Date: `#dyn_R8i6Yo`,
+  Time: `#dyn_yC3zrN`
 };
 
 export const FillInputContactForm = async (page: Page, fields: ContactFormFields) => {
@@ -66,10 +68,10 @@ export const FillInputContactForm = async (page: Page, fields: ContactFormFields
     "Dropdown_mutlple_lv5",
     "Dropdown_mutlple_lv6",
     "Dropdown_value",
-    "Checkbox_TrueFalse"  , 
+    "Checkbox_TrueFalse",
     "Radio"
   ];
-  
+
 
   for (const key of dropdownLevels) {
     const value = fields[key];
@@ -86,7 +88,7 @@ export const FillInputContactForm = async (page: Page, fields: ContactFormFields
     }
 
     console.log(`Selecting ${key}: ${value}`);
-   await page.waitForTimeout(3000)
+    await page.waitForTimeout(3000)
     await page.locator(fieldMap[key]).click();
     await page.waitForTimeout(3000)
     await page.getByRole("option", { name: value }).click();
@@ -99,31 +101,31 @@ export const FillInputContactForm = async (page: Page, fields: ContactFormFields
     if (!value) continue;
     if (key === "Datetime") {
       console.log(`Filling DATE: ${value}`);
-     await page.locator(fieldMap[key]).click();
-       await selectDateTime(page, value);
-       await page.waitForTimeout(5000)
+      await page.locator(fieldMap[key]).click();
+      await selectDateTime(page, value);
+      await page.waitForTimeout(5000)
       continue;
     }
     if (key === "Date") {
       console.log(`Filling DATE: ${value}`);
-     await page.locator(fieldMap[key]).click();
-       await selectDateTime(page, value);
-      
-     
+      await page.locator(fieldMap[key]).click();
+      await selectDateTime(page, value);
+
+
       continue;
     }
     if (key === "Time") {
       console.log(`Filling DATE: ${value}`);
-     await page.locator(fieldMap[key]).click();
-       await selectDateTime(page, value);
-      
-     
+      await page.locator(fieldMap[key]).click();
+      await selectDateTime(page, value);
+
+
       continue;
     }
     if (!dropdownLevels.includes(key)) {
       await page.getByRole("textbox", { name: fieldMap[key] }).fill(value);
     }
-     
+
 
   }
 };
@@ -153,13 +155,13 @@ export async function selectDateTime(page: Page, dateTimeStr?: string) {
   }
 
   const monthNames = [
-    "January","February","March","April","May","June",
-    "July","August","September","October","November","December"
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
   ];
   const monthOrder: Record<string, number> = {
-    "January": 1,"February": 2,"March": 3,"April": 4,
-    "May": 5,"June": 6,"July": 7,"August": 8,
-    "September": 9,"October": 10,"November": 11,"December": 12,
+    "January": 1, "February": 2, "March": 3, "April": 4,
+    "May": 5, "June": 6, "July": 7, "August": 8,
+    "September": 9, "October": 10, "November": 11, "December": 12,
   };
 
   // ถ้ามีวัน ให้เลือกปี/เดือน/วัน

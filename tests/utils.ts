@@ -1,4 +1,7 @@
 import path from "path";
+import dotenv from "dotenv";
+
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 const HomePage = `${process.env.CRM_BASE_URL}/home`;
 const LoginPage = `${process.env.CRM_BASE_URL}/login`;
@@ -53,4 +56,4 @@ export {
 };
 
 // export function
-export {};
+export { };

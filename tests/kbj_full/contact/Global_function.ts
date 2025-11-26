@@ -1,5 +1,5 @@
 import { Page, APIRequestContext, expect } from "@playwright/test";
-import {FillInputContactForm, ContactFormFields} from "./FillForm";
+import { FillInputContactForm, ContactFormFields } from "./FillForm";
 import { r } from "@faker-js/faker/dist/airline-DF6RqYmq";
 export type SearchParams = {
   organize_id: string;
@@ -11,30 +11,30 @@ export type SearchParams = {
   Email?: string;
   Name?: string;
   Phone?: string;
-    Address_no?: string;
-    Address_district?: string;
-    Address_subdistrict?: string;
-    Address_province?: string;
-    Address_zipcode?: string;
-    Dropdown_value?: string;
-    Dropdown_mutlple_lv1?: string;
-    Dropdown_mutlple_lv2?: string;
-    Dropdown_mutlple_lv3?: string;
-    Dropdown_mutlple_lv4?: string;
-    Dropdown_mutlple_lv5?: string;
-    Dropdown_mutlple_lv6?: string;
-    Datamasking ?: string;
-    Checkbox_TrueFalse ?: string;
-    Radio ?: string;
-    Datetime ?: string;
-    Date ?: string;
-    Time ?: string;
+  Address_no?: string;
+  Address_district?: string;
+  Address_subdistrict?: string;
+  Address_province?: string;
+  Address_zipcode?: string;
+  Dropdown_value?: string;
+  Dropdown_mutlple_lv1?: string;
+  Dropdown_mutlple_lv2?: string;
+  Dropdown_mutlple_lv3?: string;
+  Dropdown_mutlple_lv4?: string;
+  Dropdown_mutlple_lv5?: string;
+  Dropdown_mutlple_lv6?: string;
+  Datamasking?: string;
+  Checkbox_TrueFalse?: string;
+  Radio?: string;
+  Datetime?: string;
+  Date?: string;
+  Time?: string;
 };
- let json_data: any = {};  
+let json_data: any = {};
 export class ContactAPI {
   static token = "xHFsEcpsvDUL1rqapX1kf3XwIc8Q9KxkR1Zc4GHn94cHmpGrdbwEaUFCnokrXHWsEgMWdepmKUtdvrN-pFXnR9D3k765tnP5UPEhYLj0V9x-8yhR"; // <<-- คุณใส่ token ไว้ที่นี่ครั้งเดียว
 
-  static async fetchContacts(request: APIRequestContext, params: SearchParams ) {
+  static async fetchContacts(request: APIRequestContext, params: SearchParams) {
     const apiParams: Record<string, string> = {
       organize_id: params.organize_id,
       template_id: params.template_id,
@@ -54,19 +54,19 @@ export class ContactAPI {
     if (params.Address_zipcode) apiParams["data.address.zipcode"] = params.Address_zipcode;
     if (params.Dropdown_value) apiParams["data.dropdownkey"] = params.Dropdown_value;
     if (params.Dropdown_mutlple_lv1) apiParams["data.JEFOkL"] = params.Dropdown_mutlple_lv1;
-    if(params.Dropdown_mutlple_lv2) apiParams["data.ds1WmD"] = params.Dropdown_mutlple_lv2;
-    if(params.Dropdown_mutlple_lv3) apiParams["data.kGCQa0"] = params.Dropdown_mutlple_lv3;
-    if(params.Dropdown_mutlple_lv4) apiParams["data.Rtp6MP"] = params.Dropdown_mutlple_lv4;
-    if(params.Dropdown_mutlple_lv5) apiParams["data.BI5q7i"] = params.Dropdown_mutlple_lv5;
-    if(params.Dropdown_mutlple_lv6) apiParams["data.fKpu0q"] = params.Dropdown_mutlple_lv6;
-    if(params.Datamasking) apiParams["data.datamasking"] = params.Datamasking;   
-    if(params.Checkbox_TrueFalse) apiParams["data.chkbox"] = params.Checkbox_TrueFalse;
-    if(params.Radio) apiParams["data.radiobtn"] = params.Radio;
-    if(params.Datetime) apiParams["data.feu1"] = params.Datetime;
-    if(params.Date) apiParams["data.R8i6Yo"] = params.Date;
-    if(params.Time) apiParams["data.yC3zrN"] = params.Time;
+    if (params.Dropdown_mutlple_lv2) apiParams["data.ds1WmD"] = params.Dropdown_mutlple_lv2;
+    if (params.Dropdown_mutlple_lv3) apiParams["data.kGCQa0"] = params.Dropdown_mutlple_lv3;
+    if (params.Dropdown_mutlple_lv4) apiParams["data.Rtp6MP"] = params.Dropdown_mutlple_lv4;
+    if (params.Dropdown_mutlple_lv5) apiParams["data.BI5q7i"] = params.Dropdown_mutlple_lv5;
+    if (params.Dropdown_mutlple_lv6) apiParams["data.fKpu0q"] = params.Dropdown_mutlple_lv6;
+    if (params.Datamasking) apiParams["data.datamasking"] = params.Datamasking;
+    if (params.Checkbox_TrueFalse) apiParams["data.chkbox"] = params.Checkbox_TrueFalse;
+    if (params.Radio) apiParams["data.radiobtn"] = params.Radio;
+    if (params.Datetime) apiParams["data.feu1"] = params.Datetime;
+    if (params.Date) apiParams["data.R8i6Yo"] = params.Date;
+    if (params.Time) apiParams["data.yC3zrN"] = params.Time;
 
-     const query = new URLSearchParams(apiParams).toString();
+    const query = new URLSearchParams(apiParams).toString();
 
 
     const apiResponse = await request.get(
@@ -80,42 +80,42 @@ export class ContactAPI {
       }
     );
 
-     json_data = await apiResponse.json();
-   
-    
-    
-    const raw = json_data?.data?.data ?? [];
-    
-    const contacts: ContactFormFields[] = raw.map((item: any) => {
- 
+    json_data = await apiResponse.json();
 
-  return {
-    Name: item.data.name ?? '',
-    Dropdown_value: item.data.dropdownkey ?? '',
-    Dropdown_mutlple_lv1: item.data.JEFOkL ?? '',
-    Dropdown_mutlple_lv2: item.data.ds1WmD ?? '',
-    Dropdown_mutlple_lv3: item.data.kGCQa0 ?? '',
-    Dropdown_mutlple_lv4: item.data.Rtp6MP ?? '',
-    Dropdown_mutlple_lv5: item.data.BI5q7i ?? '',
-    Dropdown_mutlple_lv6: item.data.fKpu0q ?? '',
-    Phone: item.data['phone']?.join(', ') ?? '',
-    Email: item.data.email ?? '',
-    DataMarking : item.data.datamasking ?? '' , 
-    Checkbox_TrueFalse: item.data.chkbox ?? false,
-    Radio: item.data.radiobtn ?? '',
-    Datetime: item.data.feu1 ?? '',
-    Date: item.data.R8i6Yo ?? '',
-    Time: item.data.yC3zrN ?? '',
-    Address_no: item.data.address?.[0]?.address ?? '',
-    Address_district: item.data.address?.[0]?.district ?? '',
-    Address_subdistrict: item.data.address?.[0]?.subdistrict ?? '',
-    Address_province: item.data.address?.[0]?.province ?? '',
-    Address_zipcode: item.data.address?.[0]?.zipcode ?? '',
-   
-    Datamasking: item.data.datamasking ?? '',
-    
-  };
-});
+
+
+    const raw = json_data?.data?.data ?? [];
+
+    const contacts: ContactFormFields[] = raw.map((item: any) => {
+
+
+      return {
+        Name: item.data.name ?? '',
+        Dropdown_value: item.data.dropdownkey ?? '',
+        Dropdown_mutlple_lv1: item.data.JEFOkL ?? '',
+        Dropdown_mutlple_lv2: item.data.ds1WmD ?? '',
+        Dropdown_mutlple_lv3: item.data.kGCQa0 ?? '',
+        Dropdown_mutlple_lv4: item.data.Rtp6MP ?? '',
+        Dropdown_mutlple_lv5: item.data.BI5q7i ?? '',
+        Dropdown_mutlple_lv6: item.data.fKpu0q ?? '',
+        Phone: item.data['phone']?.join(', ') ?? '',
+        Email: item.data.email ?? '',
+        DataMarking: item.data.datamasking ?? '',
+        Checkbox_TrueFalse: item.data.chkbox ?? false,
+        Radio: item.data.radiobtn ?? '',
+        Datetime: item.data.feu1 ?? '',
+        Date: item.data.R8i6Yo ?? '',
+        Time: item.data.yC3zrN ?? '',
+        Address_no: item.data.address?.[0]?.address ?? '',
+        Address_district: item.data.address?.[0]?.district ?? '',
+        Address_subdistrict: item.data.address?.[0]?.subdistrict ?? '',
+        Address_province: item.data.address?.[0]?.province ?? '',
+        Address_zipcode: item.data.address?.[0]?.zipcode ?? '',
+
+        Datamasking: item.data.datamasking ?? '',
+
+      };
+    });
 
 
     return contacts;
@@ -142,15 +142,15 @@ export class ContactAPI {
       Dropdown_mutlple_lv4: form.Dropdown_mutlple_lv4,
       Dropdown_mutlple_lv5: form.Dropdown_mutlple_lv5,
       Dropdown_mutlple_lv6: form.Dropdown_mutlple_lv6,
-      Datamasking : form.Datamasking,
-      Checkbox_TrueFalse : form.Checkbox_TrueFalse ,  
-      Radio : form.Radio ,
-      Datetime : form.Datetime,
-      Date : form.Date,
-      Time : form.Time
-        
+      Datamasking: form.Datamasking,
+      Checkbox_TrueFalse: form.Checkbox_TrueFalse,
+      Radio: form.Radio,
+      Datetime: form.Datetime,
+      Date: form.Date,
+      Time: form.Time
+
     });
- 
+
     // 2) เปิดหน้า
     await page.goto("/contact");
 
@@ -165,24 +165,24 @@ export class ContactAPI {
     await page.getByLabel("Clear").click();
     await page.getByRole("combobox", { name: "Select End Datetime" }).click();
     await page.getByLabel("Clear").click();
-   
+
     // 6) Search
     await page.getByRole('button', { name: 'Search' }).nth(1).click();
     await page.waitForTimeout(5000)
     await page.pause
-// 1) ดึง rows จาก table
-const rows = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]');
-await page.waitForTimeout(2000);
+    // 1) ดึง rows จาก table
+    const rows = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]');
+    await page.waitForTimeout(2000);
 
-const count = await rows.count();
+    const count = await rows.count();
 
 
-const tableContacts: any[] = [];
+    const tableContacts: any[] = [];
 
-for (let i = 0; i < count; i++) {
-    const row = rows.nth(i);
+    for (let i = 0; i < count; i++) {
+      const row = rows.nth(i);
 
-    const contact = {
+      const contact = {
         Name: await row.locator('#dyn_row_name').innerText(),
         Dropdown: await row.locator('#dyn_row_dropdownkey').innerText(),
 
@@ -203,31 +203,31 @@ for (let i = 0; i < count; i++) {
         Time: await row.locator('#dyn_row_yC3zrN').innerText(),
 
         Address: await row.locator('#dyn_row_address').innerText()
-    };
+      };
 
-    tableContacts.push(contact);
-}
+      tableContacts.push(contact);
+    }
 
-// -----------------------------------------------------------
-// 2) เทียบกับ API contacts ทั้งหมด (contacts)
-// -----------------------------------------------------------
+    // -----------------------------------------------------------
+    // 2) เทียบกับ API contacts ทั้งหมด (contacts)
+    // -----------------------------------------------------------
 
-for (const apiContact of contacts) {
+    for (const apiContact of contacts) {
 
-    console.log("===== API CONTACT =====");
-    console.log("Name:", apiContact.Name);
-    console.log("Dropdown:", apiContact.Dropdown_value);
-    console.log("LV1:", apiContact.Dropdown_mutlple_lv1);
-    console.log("LV2:", apiContact.Dropdown_mutlple_lv2);
-    console.log("LV3:", apiContact.Dropdown_mutlple_lv3);
-    console.log("LV4:", apiContact.Dropdown_mutlple_lv4);
-    console.log("LV5:", apiContact.Dropdown_mutlple_lv5);
-    console.log("LV6:", apiContact.Dropdown_mutlple_lv6);
-    console.log("Phone:", apiContact.Phone);
-    console.log("Email:", apiContact.Email);
-    console.log("Datetime:", apiContact.Datetime);
+      console.log("===== API CONTACT =====");
+      console.log("Name:", apiContact.Name);
+      console.log("Dropdown:", apiContact.Dropdown_value);
+      console.log("LV1:", apiContact.Dropdown_mutlple_lv1);
+      console.log("LV2:", apiContact.Dropdown_mutlple_lv2);
+      console.log("LV3:", apiContact.Dropdown_mutlple_lv3);
+      console.log("LV4:", apiContact.Dropdown_mutlple_lv4);
+      console.log("LV5:", apiContact.Dropdown_mutlple_lv5);
+      console.log("LV6:", apiContact.Dropdown_mutlple_lv6);
+      console.log("Phone:", apiContact.Phone);
+      console.log("Email:", apiContact.Email);
+      console.log("Datetime:", apiContact.Datetime);
 
-    const found = tableContacts.some(row => {
+      const found = tableContacts.some(row => {
 
         console.log("---- TABLE ROW ----");
         console.log("Name:", row.Name);
@@ -244,43 +244,43 @@ for (const apiContact of contacts) {
         console.log("Address:", row.Address);
 
         return (
-            row.Name.trim() === apiContact.Name &&
-            row.Email.trim() === apiContact.Email &&
-            row.Phone.trim() === apiContact.Phone
+          row.Name.trim() === apiContact.Name &&
+          row.Email.trim() === apiContact.Email &&
+          row.Phone.trim() === apiContact.Phone
 
         );
-    });
+      });
 
-    console.log("FOUND?", found);
-    expect(found).toBeTruthy();
-}
-}
+      console.log("FOUND?", found);
+      expect(found).toBeTruthy();
+    }
+  }
 
 }
 
 // ตรวจสอบว่าข้อมูลที่สร้าง ตรงกับแถวบนสุดของตารางหรือไม่
-export async function verifyTopTableRow(page, expected: { Name?: string, Phone?: string, Email?: string , CheckDelete?:String , CheckView?:string,CheckEdit?:string}) {
+export async function verifyTopTableRow(page, expected: { Name?: string, Phone?: string, Email?: string, CheckDelete?: String, CheckView?: string, CheckEdit?: string }) {
   const firstRow = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').first();
 
-  if(expected.CheckView){
-    
-  await page.getByRole('row', { name: expected.CheckView }).locator('#dyn_row_action').click();
-  await page.getByRole('menuitem', { name: 'View' }).click();
+  if (expected.CheckView) {
+
+    await page.getByRole('row', { name: expected.CheckView }).locator('#dyn_row_action').click();
+    await page.getByRole('menuitem', { name: 'View' }).click();
   }
-  if(expected.CheckEdit){
-    
-  await page.getByRole('row', { name: expected.CheckEdit }).locator('#dyn_row_action').click();
-  await page.getByRole('menuitem', { name: 'Edit' }).click();
+  if (expected.CheckEdit) {
+
+    await page.getByRole('row', { name: expected.CheckEdit }).locator('#dyn_row_action').click();
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
   }
-  if(expected.CheckDelete){
-    
-   
+  if (expected.CheckDelete) {
+
+
     const row = page.locator('#dyn_contactTable tr').filter({ hasText: expected.CheckDelete });
-  await row.locator('#dyn_row_isSelected').click();
- await page.getByRole('button', { name: /Delete Contact/ }).click();
-  await page.getByRole('button', { name: 'Delete', exact: true }).click();
-  // ตรวจสอบว่า row หายไป
-await expect(page.locator('#dyn_contactTable tr').filter({ hasText: expected.CheckDelete  })).toHaveCount(0);
+    await row.locator('#dyn_row_isSelected').click();
+    await page.getByRole('button', { name: /Delete Contact/ }).click();
+    await page.getByRole('button', { name: 'Delete', exact: true }).click();
+    // ตรวจสอบว่า row หายไป
+    await expect(page.locator('#dyn_contactTable tr').filter({ hasText: expected.CheckDelete })).toHaveCount(0);
   }
   if (expected.Name) {
     const nameCell = await firstRow.locator('td').nth(1).textContent();
@@ -292,18 +292,29 @@ await expect(page.locator('#dyn_contactTable tr').filter({ hasText: expected.Che
     const rows = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]');
 
     const matchedRow = rows.filter({
-  has: page.locator('td').nth(1).filter({ hasText: expected.Name })
-});
+      has: page.locator('td').nth(1).filter({ hasText: expected.Name })
+    });
     const phoneCell = await matchedRow.locator('td').nth(9).textContent();
-   
+
     console.log('แถวบนสุด Phone:', phoneCell?.trim());
-    
+
     await expect(phoneCell?.trim()).toBe(expected.Phone);
   }
 
   if (expected.Email) {
-    const emailCell = await firstRow.locator('td').nth(3).textContent();
+    const emailCell = await firstRow.locator('#dyn_row_email').textContent();
     console.log('แถวบนสุด Email:', emailCell?.trim());
     await expect(emailCell?.trim()).toBe(expected.Email);
   }
+}
+
+export function formatDate(date = new Date()) {
+  const dd = String(date.getDate()).padStart(2, '0');
+  const mm = String(date.getMonth() + 1).padStart(2, '0'); // เดือนเริ่มจาก 0
+  const yyyy = date.getFullYear();
+
+  const hh = String(date.getHours()).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
+
+  return `${dd}:${mm}:${yyyy}:${hh}:${min}`;
 }
