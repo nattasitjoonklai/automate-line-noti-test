@@ -15,6 +15,7 @@ export type ContactFormFields = {
   Address_zipcode?: string;
   Dropdown_value?: string;
   Dropdown_mutlple_lv1?: string;
+  Segment?: string;
   Dropdown_mutlple_lv2?: string;
   Dropdown_mutlple_lv3?: string;
   Dropdown_mutlple_lv4?: string;
@@ -50,37 +51,35 @@ export const fieldMap: Record<keyof ContactFormFields, string> = {
   Dropdown_mutlple_lv5: `#dyn_BI5q7i`,
   Dropdown_mutlple_lv6: `#dyn_fKpu0q`,
   Datamasking: `Enter your Data Masking`,
-  Text_input: `Enter your textinput`,
+  Text_input: `#dyn_txt_input`,
   Checkbox_TrueFalse: '#dyn_chkbox',
   Radio: '#dyn_radiobtn',
   Datetime: `#dyn_feu1`,
   Date: `#dyn_R8i6Yo`,
-  Time: `#dyn_yC3zrN`
+  Time: `#dyn_yC3zrN`,
+  Segment: `#dyn_name_segment`
 };
 
 export const FillInputContactForm = async (page: Page, fields: ContactFormFields) => {
   // เลือก dropdown ตามลำดับ
-  const dropdownLevels: (keyof ContactFormFields)[] = [
+  // Chain for multiple dropdown levels
+  const multiDropdownLevels: (keyof ContactFormFields)[] = [
     "Dropdown_mutlple_lv1",
     "Dropdown_mutlple_lv2",
     "Dropdown_mutlple_lv3",
     "Dropdown_mutlple_lv4",
     "Dropdown_mutlple_lv5",
     "Dropdown_mutlple_lv6",
-    "Dropdown_value",
-    "Checkbox_TrueFalse",
-    "Radio"
   ];
 
-
-  for (const key of dropdownLevels) {
+  for (const key of multiDropdownLevels) {
     const value = fields[key];
     if (!value) continue;
 
-    // ถ้าเป็น Level > 1 ให้เช็คว่ามีค่า Level ก่อนหน้าแล้ว
-    const index = dropdownLevels.indexOf(key);
+    // Check dependency
+    const index = multiDropdownLevels.indexOf(key);
     if (index > 0) {
-      const prevKey = dropdownLevels[index - 1];
+      const prevKey = multiDropdownLevels[index - 1];
       if (!fields[prevKey]) {
         console.warn(`Cannot select ${key} because ${prevKey} is not set`);
         continue;
@@ -88,11 +87,37 @@ export const FillInputContactForm = async (page: Page, fields: ContactFormFields
     }
 
     console.log(`Selecting ${key}: ${value}`);
-    await page.waitForTimeout(3000)
+    await page.waitForTimeout(1000)
     await page.locator(fieldMap[key]).click();
-    await page.waitForTimeout(3000)
+
+    // Wait for options to be visible
+    await page.getByRole("option", { name: value }).waitFor({ state: 'visible', timeout: 10000 });
     await page.getByRole("option", { name: value }).click();
-    await page.waitForTimeout(3000)
+
+  }
+
+  // Independent Dropdowns/Selects
+  const independentSelects: (keyof ContactFormFields)[] = [
+    "Dropdown_value",
+    "Checkbox_TrueFalse",
+    "Radio"
+  ];
+
+  for (const key of independentSelects) {
+    const value = fields[key];
+    if (!value) continue;
+
+    console.log(`Selecting ${key}: ${value}`);
+    // Check if it's a radio or checkbox which might need different handling if they are not standard dropdowns
+    // But fieldMap maps them to IDs. If they are PrimeVue dropdowns/selects, click + option works.
+    // If Radio is actual radio buttons, we need check().
+    // fieldMap['Radio'] = '#dyn_radiobtn'. If it's a dropdown (as per HTML snippet earlier: <div id="dyn_radiobtn" class="p-select ...">), it's a dropdown.
+    // fieldMap['Checkbox_TrueFalse'] = '#dyn_chkbox'. Also p-select.
+
+    await page.locator(fieldMap[key]).click();
+    await page.waitForTimeout(1000)
+    await page.getByRole("option", { name: value }).click();
+    await page.waitForTimeout(1000)
   }
 
   // กรอก textbox / input อื่น ๆ
@@ -101,29 +126,40 @@ export const FillInputContactForm = async (page: Page, fields: ContactFormFields
     if (!value) continue;
     if (key === "Datetime") {
       console.log(`Filling DATE: ${value}`);
-      await page.locator(fieldMap[key]).click();
-      await selectDateTime(page, value);
-      await page.waitForTimeout(5000)
+      await page.locator(fieldMap[key]).locator('input').click();
+      await page.locator(fieldMap[key]).locator('input').fill(value);
+      await page.locator(fieldMap[key]).locator('input').press('Enter');
+      // await selectDateTime(page, value);
+
       continue;
     }
     if (key === "Date") {
       console.log(`Filling DATE: ${value}`);
-      await page.locator(fieldMap[key]).click();
-      await selectDateTime(page, value);
+      await page.locator(fieldMap[key]).locator('input').click();
+      await page.locator(fieldMap[key]).locator('input').fill(value);
+      await page.locator(fieldMap[key]).locator('input').press('Enter');
+      // await selectDateTime(page, value);
 
 
       continue;
     }
     if (key === "Time") {
       console.log(`Filling DATE: ${value}`);
-      await page.locator(fieldMap[key]).click();
-      await selectDateTime(page, value);
+      await page.locator(fieldMap[key]).locator('input').click();
+      await page.locator(fieldMap[key]).locator('input').fill(value);
+      await page.locator(fieldMap[key]).locator('input').press('Enter');
+      // await selectDateTime(page, value);
 
 
       continue;
     }
-    if (!dropdownLevels.includes(key)) {
-      await page.getByRole("textbox", { name: fieldMap[key] }).fill(value);
+    if (!multiDropdownLevels.includes(key) && !independentSelects.includes(key)) {
+      const selector = fieldMap[key];
+      if (selector.startsWith('#')) {
+        await page.locator(selector).fill(value);
+      } else {
+        await page.getByRole("textbox", { name: selector }).fill(value);
+      }
     }
 
 
@@ -136,8 +172,8 @@ export async function selectDateTime(page: Page, dateTimeStr?: string) {
   let year: number | null = null;
   let month: number | null = null;
   let day: number | null = null;
-  let hour = 0;
-  let minute = 0;
+  let hour: number | null = null;
+  let minute: number | null = null;
 
   // ตรวจสอบว่าเป็น "YYYY-MM-DD HH:MM", "YYYY-MM-DD" หรือ "HH:MM"
   if (dateTimeStr.includes('-')) {

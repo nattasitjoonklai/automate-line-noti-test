@@ -23,6 +23,7 @@ export type SearchParams = {
   Dropdown_mutlple_lv4?: string;
   Dropdown_mutlple_lv5?: string;
   Dropdown_mutlple_lv6?: string;
+  Segment?: string;
   Datamasking?: string;
   Checkbox_TrueFalse?: string;
   Radio?: string;
@@ -32,7 +33,7 @@ export type SearchParams = {
 };
 let json_data: any = {};
 export class ContactAPI {
-  static token = "xHFsEcpsvDUL1rqapX1kf3XwIc8Q9KxkR1Zc4GHn94cHmpGrdbwEaUFCnokrXHWsEgMWdepmKUtdvrN-pFXnR9D3k765tnP5UPEhYLj0V9x-8yhR"; // <<-- คุณใส่ token ไว้ที่นี่ครั้งเดียว
+  static token = "vgOHEmRlsPh_FFhNgsltbqta3KKWnuL9RKwBD8_LDQTi_GPghiLYbn7i2AIid862OGVyuAIT33yDbTY3ga1Vde_1gBSQi4BxbvAcGZ_JpTToHrro"; // <<-- คุณใส่ token ไว้ที่นี่ครั้งเดียว
 
   static async fetchContacts(request: APIRequestContext, params: SearchParams) {
     const apiParams: Record<string, string> = {
@@ -65,6 +66,7 @@ export class ContactAPI {
     if (params.Datetime) apiParams["data.feu1"] = params.Datetime;
     if (params.Date) apiParams["data.R8i6Yo"] = params.Date;
     if (params.Time) apiParams["data.yC3zrN"] = params.Time;
+    if (params.Segment) apiParams["data.name_segment"] = params.Segment;
 
     const query = new URLSearchParams(apiParams).toString();
 
@@ -135,7 +137,7 @@ export class ContactAPI {
       Address_province: form.Address_province,
       Address_zipcode: form.Address_zipcode,
       Dropdown_value: form.Dropdown_value,
-
+      Segment: form.Segment,
       Dropdown_mutlple_lv1: form.Dropdown_mutlple_lv1,
       Dropdown_mutlple_lv2: form.Dropdown_mutlple_lv2,
       Dropdown_mutlple_lv3: form.Dropdown_mutlple_lv3,
@@ -153,7 +155,8 @@ export class ContactAPI {
 
     // 2) เปิดหน้า
     await page.goto("/contact");
-
+    // 2.1) wait for load
+    await page.waitForLoadState("networkidle");
     // 3) เปิด filter
     await page.getByRole("button", { name: "Search" }).nth(2).click();
 
@@ -168,11 +171,13 @@ export class ContactAPI {
 
     // 6) Search
     await page.getByRole('button', { name: 'Search' }).nth(1).click();
-    await page.waitForTimeout(5000)
-    await page.pause
+    await page.waitForLoadState('networkidle');
     // 1) ดึง rows จาก table
     const rows = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]');
-    await page.waitForTimeout(2000);
+
+    // Wait for the UI to reflect the API data count
+    await expect(rows).toHaveCount(contacts.length);
+
 
     const count = await rows.count();
 
@@ -209,50 +214,52 @@ export class ContactAPI {
     }
 
     // -----------------------------------------------------------
-    // 2) เทียบกับ API contacts ทั้งหมด (contacts)
+    // 2) เทียบข้อมูลจากหน้าเว็บ (tableContacts) กับ API (contacts)
     // -----------------------------------------------------------
+    console.log("========== DEBUG: API DATA ==========");
+    console.log(JSON.stringify(contacts, null, 2));
+    console.log("=====================================");
 
-    for (const apiContact of contacts) {
+    console.log("========== DEBUG: UI TABLE DATA ==========");
+    console.log(JSON.stringify(tableContacts, null, 2));
+    console.log("==========================================");
 
-      console.log("===== API CONTACT =====");
-      console.log("Name:", apiContact.Name);
-      console.log("Dropdown:", apiContact.Dropdown_value);
-      console.log("LV1:", apiContact.Dropdown_mutlple_lv1);
-      console.log("LV2:", apiContact.Dropdown_mutlple_lv2);
-      console.log("LV3:", apiContact.Dropdown_mutlple_lv3);
-      console.log("LV4:", apiContact.Dropdown_mutlple_lv4);
-      console.log("LV5:", apiContact.Dropdown_mutlple_lv5);
-      console.log("LV6:", apiContact.Dropdown_mutlple_lv6);
-      console.log("Phone:", apiContact.Phone);
-      console.log("Email:", apiContact.Email);
-      console.log("Datetime:", apiContact.Datetime);
+    console.log(`Found ${tableContacts.length} rows in UI, ${contacts.length} rows from API`);
 
-      const found = tableContacts.some(row => {
+    // Verify row counts match
+    expect(tableContacts.length, `UI row count (${tableContacts.length}) should match API row count (${contacts.length})`).toBe(contacts.length);
 
-        console.log("---- TABLE ROW ----");
-        console.log("Name:", row.Name);
-        console.log("Dropdown:", row.Dropdown);
-        console.log("LV1:", row.Dropdown_mutlple_lv1);
-        console.log("LV2:", row.Dropdown_mutlple_lv2);
-        console.log("LV3:", row.Dropdown_mutlple_lv3);
-        console.log("LV4:", row.Dropdown_mutlple_lv4);
-        console.log("LV5:", row.Dropdown_mutlple_lv5);
-        console.log("LV6:", row.Dropdown_mutlple_lv6);
-        console.log("Phone:", row.Phone);
-        console.log("Email:", row.Email);
-        console.log("Datetime:", row.Datetime);
-        console.log("Address:", row.Address);
+    for (const row of tableContacts) {
+      console.log("Checking UI Row:", row.Name);
 
-        return (
-          row.Name.trim() === apiContact.Name &&
-          row.Email.trim() === apiContact.Email &&
-          row.Phone.trim() === apiContact.Phone
+      // Find matching record in API data
+      // Using Name, Email, Phone as primary keys for matching, or just Name if others are empty
+      const match = contacts.find(apiContact => {
+        // Normalize for comparison (trim, lowercase if needed)
+        const nameMatch = row.Name.trim() === apiContact.Name.trim();
+        // Email/Phone might be empty in UI or API, handle accordingly
+        const emailMatch = row.Email.trim() === apiContact.Email.trim();
+        // Phone formatting might differ (e.g. spaces), remove non-digits for comparison if needed
+        const phoneMatch = row.Phone.replace(/\D/g, '') === apiContact.Phone.replace(/\D/g, '');
 
-        );
+        // If we searched by specific field, we expect that to match. 
+        // But here we are just finding which API record corresponds to this UI row.
+        // Let's assume Name is unique enough or use combination.
+        return nameMatch && (row.Email ? emailMatch : true) && (row.Phone ? phoneMatch : true);
       });
 
-      console.log("FOUND?", found);
-      expect(found).toBeTruthy();
+      if (match) {
+        console.log("✅ Found match in API:", match.Name);
+        // Verify other fields if they are present in the row
+        // Add assertions for other columns here if needed
+        // Example:
+        // if (row.Dropdown) expect(row.Dropdown.trim()).toBe(match.Dropdown_value.trim());
+      } else {
+        console.error("❌ UI Row not found in API response:", row);
+        console.log("API Data:", contacts);
+      }
+
+      expect(match, `UI Row with Name: ${row.Name} should exist in API response`).toBeDefined();
     }
   }
 

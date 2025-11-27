@@ -18,7 +18,7 @@ export default defineConfig({
     video: "on",
     baseURL: process.env.CRM_BASE_URL,
     launchOptions: { args: ["--start-maximized"] },
-    trace: "on-first-retry",
+    trace: "on",
     headless: false,
   },
 
