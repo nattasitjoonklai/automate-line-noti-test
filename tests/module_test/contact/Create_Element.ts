@@ -20,6 +20,7 @@ export class Element_Create_Contact {
   readonly btnUpdate: Locator;
   readonly btnconfirm_update: Locator;
   readonly btn_link: Locator;
+  readonly btnconfirm_create: Locator;
   //Dropdown
   readonly dropdown: Locator;
   readonly multipledropdownlv1: Locator;
@@ -90,6 +91,7 @@ export class Element_Create_Contact {
     this.btn_address = page.getByRole('button', { name: 'Add Address' })
     this.input_address = page.locator('#dyn_address_0');
     this.submmit_contact = page.getByRole('button', { name: 'Create', exact: true })
+    this.btnconfirm_create = page.getByLabel('Create', { exact: true })
     this.error_msg_empty = page.getByText('Value is required')
     this.error_msg_val = page.getByText('Value is not an integer')
     this.error_msg_email_valid = page.getByText('Value is not a valid email')
