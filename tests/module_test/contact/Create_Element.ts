@@ -222,34 +222,6 @@ export class Element_Create_Contact {
     if (hasValue(fields.Time)) await this.input_Create_Time.fill(fields.Time);
     if (hasValue(fields.text_input)) await this.inputText.fill(fields.text_input);
 
-    // if (hasValue(fields.Address_no)) {
-    //   await this.btn_address.click();
-    //   await this.addressNo.fill(fields.Address_no);
-    // }
-
-    // if (hasValue(fields.Address_subdistrict)) {
-    //   await this.addressSubDistrict.click();
-    //   await this.addressSubDistrict.fill(fields.Address_subdistrict);
-    //   await this.page.locator('li.p-listbox-option').first().click();
-    // }
-
-    // if (hasValue(fields.Address_district)) {
-    //   await this.addressDistrict.click();
-    //   await this.addressDistrict.fill(fields.Address_district);
-    //   await this.page.locator('li.p-listbox-option').first().click();
-    // }
-
-    // if (hasValue(fields.Address_province)) {
-    //   await this.addressProvince.click();
-    //   await this.addressProvince.fill(fields.Address_province);
-    //   await this.page.locator('li.p-listbox-option').first().click();
-    // }
-
-    // if (hasValue(fields.Address_zipcode)) {
-    //   await this.addressZipcode.click();
-    //   await this.addressZipcode.fill(fields.Address_zipcode);
-    //   await this.page.locator('li.p-listbox-option').first().click();
-    // }
 
     if (hasValue(fields.Btn_group)) {
       await this.page.locator(`input[type="radio"][name="dynamic"][value="${fields.Btn_group}"]`).check();
@@ -282,16 +254,20 @@ export class Element_Create_Contact {
       await this.page.locator('#dyn_text_group').fill(fields.text_group);
     }
 
-    const isChecked = await this.inputCheckbox.isChecked();
-    if (fields.Checkbox && !isChecked) {
-      // ต้องติ๊ก แต่ตอนนี้ยังไม่ติ๊ก → ติ๊กให้
-      await this.inputCheckbox.check();
+    // ✅ แก้ไข: เช็คว่ามีการส่ง Checkbox parameter มาหรือไม่ก่อน
+    if (hasValue(fields.Checkbox)) {
+      const isChecked = await this.inputCheckbox.isChecked();
+      if (fields.Checkbox && !isChecked) {
+        // ต้องติ๊ก แต่ตอนนี้ยังไม่ติ๊ก → ติ๊กให้
+        await this.inputCheckbox.check();
+      }
+
+      if (!fields.Checkbox && isChecked) {
+        // ไม่ควรติ๊ก แต่ตอนนี้ติ๊กอยู่ → เอาติ๊กออก
+        await this.inputCheckbox.uncheck();
+      }
     }
 
-    if (!fields.Checkbox && isChecked) {
-      // ไม่ควรติ๊ก แต่ตอนนี้ติ๊กอยู่ → เอาติ๊กออก
-      await this.inputCheckbox.uncheck();
-    }
 
     // Dynamic Address Handling (Address_no_1, Address_no_2, ...)
     for (let i = 1; i <= 10; i++) {
@@ -304,24 +280,19 @@ export class Element_Create_Contact {
       if (hasValue(fields[noKey]) || hasValue(fields[districtKey]) || hasValue(fields[provKey]) || hasValue(fields[subKey]) || hasValue(fields[zipKey])) {
         const index = i - 1;
 
-        // Ensure address row exists
-        // Check count of existing address rows to decide if we need to add
-        const addressInputs = this.page.locator('input[id^="dyn_address_"]');
-        const currentCount = await addressInputs.count();
+        // ✅ เช็คว่า address row นี้มีอยู่แล้วหรือไม่
+        const addressRowInput = this.page.locator(`#dyn_address_${index}`);
+        const isAddressRowVisible = await addressRowInput.isVisible().catch(() => false);
 
-        if (index >= currentCount) {
-
-
-          // Only click if we really need a new row
+        // ถ้า address row ยังไม่มี ให้คลิก Add Address
+        if (!isAddressRowVisible) {
           await this.btn_address.click();
           await this.page.waitForTimeout(500);
-        }
 
-        // Double check visibility just in case
-        const addressRowInput = this.page.locator(`#dyn_address_${index}`);
-        if (!(await addressRowInput.isVisible())) {
-          // If still not visible, maybe click again or wait?
-          // Should be handled by the count check above.
+          // รอให้ address row ปรากฏ
+          await addressRowInput.waitFor({ state: 'visible', timeout: 3000 }).catch(() => {
+            console.warn(`Address row ${index} did not appear after clicking Add Address`);
+          });
         }
 
         // Fill Address No
