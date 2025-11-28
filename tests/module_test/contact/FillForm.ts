@@ -127,18 +127,18 @@ export const FillInputContactForm = async (page: Page, fields: ContactFormFields
     if (key === "Datetime") {
       console.log(`Filling DATE: ${value}`);
       await page.locator(fieldMap[key]).locator('input').click();
-      await page.locator(fieldMap[key]).locator('input').fill(value);
-      await page.locator(fieldMap[key]).locator('input').press('Enter');
-      // await selectDateTime(page, value);
+      // await page.locator(fieldMap[key]).locator('input').fill(value);
+      // await page.locator(fieldMap[key]).locator('input').press('Enter');
+      await selectDateTime(page, value);
 
       continue;
     }
     if (key === "Date") {
       console.log(`Filling DATE: ${value}`);
       await page.locator(fieldMap[key]).locator('input').click();
-      await page.locator(fieldMap[key]).locator('input').fill(value);
-      await page.locator(fieldMap[key]).locator('input').press('Enter');
-      // await selectDateTime(page, value);
+      // await page.locator(fieldMap[key]).locator('input').fill(value);
+      // await page.locator(fieldMap[key]).locator('input').press('Enter');
+      await selectDateTime(page, value);
 
 
       continue;
@@ -207,10 +207,11 @@ export async function selectDateTime(page: Page, dateTimeStr?: string) {
     const prevMonthBtn = page.locator('button.p-datepicker-prev-button');
     const yearLabel = page.locator('button.p-datepicker-select-year');
     const monthLabel = page.locator('button.p-datepicker-select-month');
-
+    await page.waitForTimeout(500);
     while (true) {
       const currentYear = parseInt(await yearLabel.textContent() || "0");
       const currentMonth = (await monthLabel.textContent() || "").trim();
+      await page.waitForTimeout(500);
       if (currentYear === year && currentMonth === monthName) break;
 
       if (currentYear > year || (currentYear === year && monthOrder[currentMonth] > monthOrder[monthName])) {
@@ -218,7 +219,7 @@ export async function selectDateTime(page: Page, dateTimeStr?: string) {
       } else {
         await nextMonthBtn.click();
       }
-      await page.waitForTimeout(100);
+      await page.waitForTimeout(500);
     }
 
     const dayBtn = page.locator(`.p-datepicker-day:not(.p-disabled) >> text="${day}"`);

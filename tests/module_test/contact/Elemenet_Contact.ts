@@ -79,7 +79,7 @@ export class Element_Contact {
     this.btnDownloadTemplate = page.getByRole('button', { name: 'Download Template' }); // Assuming this name, will verify or adjust if test fails
     this.btnSearch = page.getByRole('button', { name: 'Search' }).nth(2);
     this.btnDelete = page.getByRole('button', { name: 'Delete' });
-    this.btnclear = page.getByRole('button', { name: 'Clear' })
+    this.btnclear = page.getByRole('button', { name: 'Clear' }).and(page.locator(':not(.p-datepicker-clear-button)'));
     // Inputs
     this.inputStartDate = page.locator('#start_datetime')
     this.inputEndDate = page.locator('#end_datetime')

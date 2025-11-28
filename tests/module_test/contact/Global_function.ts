@@ -33,7 +33,7 @@ export type SearchParams = {
 };
 let json_data: any = {};
 export class ContactAPI {
-  static token = "vgOHEmRlsPh_FFhNgsltbqta3KKWnuL9RKwBD8_LDQTi_GPghiLYbn7i2AIid862OGVyuAIT33yDbTY3ga1Vde_1gBSQi4BxbvAcGZ_JpTToHrro"; // <<-- คุณใส่ token ไว้ที่นี่ครั้งเดียว
+  static token = "RhVacFdlMJuUOShMij97L2We4ZDcJDOzZh0EmCA0D_lt6Qk5FiQ5ZIEDrRJANq1C4pJog0AsMGOKpxKkRJd49VXtu83Ukaspw3KdHbL0xYMZrj5Y"; // <<-- คุณใส่ token ไว้ที่นี่ครั้งเดียว
 
   static async fetchContacts(request: APIRequestContext, params: SearchParams) {
     const apiParams: Record<string, string> = {
@@ -166,6 +166,7 @@ export class ContactAPI {
     // 5) clear date
     await page.getByRole("combobox", { name: "Select Start Datetime" }).click();
     await page.getByLabel("Clear").click();
+    await page.waitForTimeout(1000);
     await page.getByRole("combobox", { name: "Select End Datetime" }).click();
     await page.getByLabel("Clear").click();
 

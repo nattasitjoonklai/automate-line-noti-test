@@ -4,6 +4,7 @@ import { Element_Contact } from "./Elemenet_Contact";
 import { FillInputContactForm, ContactFormFields } from "./FillForm";
 import { ContactAPI, formatDate, verifyTopTableRow } from "./Global_function";
 import { Element_Create_Contact } from "./Create_Element";
+import { waitForDebugger } from "inspector";
 
 // function กรอกข้อมูล auto
 
@@ -490,7 +491,8 @@ test('CRM_CT00044	"การค้นหาช่อง Date Time กรณี�
 
 test('CRM_CT00045	"การค้นหาช่อง Date กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
 
-  await ContactAPI.searchAndVerify(page, request, { Date: "2025-11-18" });
+  await ContactAPI.searchAndVerify(page, request, { Date: "2025-11-13" });
+
 });
 test('CRM_CT00046	"การค้นหาช่อง Date กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page }) => {
   const contact = new Element_Contact(page);
@@ -568,7 +570,7 @@ test('CRM_CT00053	การล้างข้อมูลที่กรอก (
   await FillInputContactForm(page, fillData);
 
   // Click Clear
-  await page.getByRole('button', { name: 'Clear' }).click();
+  await contact.btnclear.click();
   await page.waitForTimeout(1000); // Wait for clear action to complete
 
   // Verify fields are cleared
@@ -802,7 +804,7 @@ test('CRM_CT00070	"การใส่ข้อมูลช่อง Address ก�
 
   // Try to create without filling address fields
   await page.getByRole('button', { name: 'Create', exact: true }).click();
-  await page.pause()
+
   // Verify validation errors for required address fields
   expect(await page.getByText('Value is required').first()).toBeVisible();
   expect(await page.getByText('Value is required').nth(1)).toBeVisible();
@@ -863,6 +865,7 @@ test('CRM_CT00074	"การใส่ข้อมูลช่อง Text Input �
   await contact.btnCreateContact.click()
 
   await contact.inputName.fill('ทดสอบsadsadsddd11')
+  await page.waitForTimeout(500);
   expect(await page.getByText('Name *The maximum length')).toBeVisible()
 
 
@@ -1096,10 +1099,10 @@ test('CRM_CT00091	"การสร้างเนื้อหา อัปโห
     'tests/file_update-test/doc-14mb.doc',
 
   ]);
+  await page.waitForTimeout(1000)
   expect(await contact.error_attach_file).toBeVisible()
 
-  //   expect (await page.getByText('button *1234')).toBeVisible()
-  //  expect( await page.getByText('drop *No results found')).toBeVisible()
+
 
 });
 
@@ -1240,7 +1243,7 @@ test('CRM_CT00101	"การสร้างเนื้อหา อัปโห
   await page.waitForTimeout(2000)
   expect(contact.error_attach_file).toBeVisible()
 });
-test('CRM_CT00102	"การสร้างเนื้อหา อัปโหลด Attach File (Type JPG) ""ขนาดไฟล์ไม่เกิน5MB"" " ', async ({ page }) => {
+test.only('CRM_CT00102	"การสร้างเนื้อหา อัปโหลด Attach File (Type JPG) ""ขนาดไฟล์ไม่เกิน5MB"" " ', async ({ page }) => {
   const contact = new Element_Create_Contact(page);
   await contact.goto();
   await contact.btnCreateContact.click()
@@ -1250,10 +1253,16 @@ test('CRM_CT00102	"การสร้างเนื้อหา อัปโห
   const items = page.locator('.filepond--item');
   const count = await items.count();
   const fileNames: string[] = [];
+
   for (let i = 0; i < count; i++) {
     const fileName = await items.nth(i).locator('.filepond--file-info-main').textContent();
+
+
     if (fileName) fileNames.push(fileName.trim());
   }
+  console.log(fileNames);
+
+  await page.pause()
   const expectedFiles = ['jpg-test.jpg'];
   // 3. ตรวจสอบชื่อไฟล์ว่าตรงกับ expected หรือไม่
   expect(fileNames).toEqual(expectedFiles);
