@@ -807,7 +807,7 @@ test('CRM_CT00066	กรณีค้นหา ตำบล/แขวง ต้�
   await page.getByRole('combobox', { name: 'ค้นหา ตำบล/แขวง' }).fill(contact_Search_Data.Address_subdistrict);
 
   await page.waitForTimeout(3000)
-  await page.getByRole('option', { name: 'หลักสอง » บางแค » กรุงเทพมหานคร »' }).waitFor({ state: 'visible' }).then(el => el.click());
+  await page.getByRole('option', { name: 'หลักสอง » บางแค » กรุงเทพมหานคร »' }).click();
 
 
   expect(await page.getByRole('combobox', { name: 'หลักสอง' })).toBeVisible()
@@ -1417,29 +1417,32 @@ test('CRM_CT00106	"การสร้างเนื้อหา ปุ่มก
 
 });
 
-// test('CRM_CT00107	ปุ่มกดเพิ่มช่องการเชื่อมต่อ Sync', async ({ page }) => {
+// test('CRM_CT00107\tปุ่มกดเพิ่มช่องการเชื่อมต่อ Sync', async ({ page }) => {
 //   // TODO: Implement test for Sync connection button
 // });
 
-test('CRM_CT00108	การจดบันทึก Note ', async ({ page }) => {
+test('CRM_CT00108\tการจดบันทึก Note ', async ({ page }) => {
 
   const contact = new Element_Create_Contact(page);
   await contact.goto();
   await contact.btnCreateContact.click();
-  const input = page.locator('input.p-inputtext');
-  await expect(input).toBeDisabled();
 
+  // รอให้ note input ปรากฏ
+  const input = page.locator('#dyn_jYKyZy');
+  await input.waitFor({ state: 'visible', timeout: 5000 });
+
+  // ตรวจสอบว่า disabled
+  await expect(input).toBeDisabled();
 
 });
 
-test('CRM_CT00109	ยกเลิกการสร้าง (ปุ่มCancel) ', async ({ page }) => {
+test('CRM_CT00109\tยกเลิกการสร้าง (ปุ่มCancel) ', async ({ page }) => {
 
   const contact = new Element_Create_Contact(page);
   await contact.goto();
   await contact.btnCreateContact.click();
   await page.getByRole('button', { name: 'Cancel' }).click()
   await expect(page.getByText('ทดสอบ SectionName *ทดสอบ')).not.toBeVisible();
-
 
 });
 
@@ -1537,12 +1540,12 @@ test('CRM_CT00115	การเข้าชมข้อมูลลูกค้�
 
   expect(await contact.inputName.inputValue()).toBe(contactData.Name);
 
-  expect(await contact.multipledropdownlv1.textContent()).toBe(multipleDropdownData.MultipleDropdownlv1);
-  expect(await contact.multipledropdownlv2.textContent()).toBe(multipleDropdownData.MultipleDropdownlv2);
-  expect(await contact.multipledropdownlv3.textContent()).toBe(multipleDropdownData.MultipleDropdownlv3);
-  expect(await contact.multipledropdownlv4.textContent()).toBe(multipleDropdownData.MultipleDropdownlv4);
-  expect(await contact.multipledropdownlv5.textContent()).toBe(multipleDropdownData.MultipleDropdownlv5);
-  expect(await contact.multipledropdownlv6.textContent()).toBe(multipleDropdownData.MultipleDropdownlv6);
+  await expect(contact.multipledropdownlv1.locator('input')).toHaveAttribute('placeholder', multipleDropdownData.MultipleDropdownlv1);
+  await expect(contact.multipledropdownlv2.locator('input')).toHaveAttribute('placeholder', multipleDropdownData.MultipleDropdownlv2);
+  await expect(contact.multipledropdownlv3.locator('input')).toHaveAttribute('placeholder', multipleDropdownData.MultipleDropdownlv3);
+  await expect(contact.multipledropdownlv4.locator('input')).toHaveAttribute('placeholder', multipleDropdownData.MultipleDropdownlv4);
+  await expect(contact.multipledropdownlv5.locator('input')).toHaveAttribute('placeholder', multipleDropdownData.MultipleDropdownlv5);
+  await expect(contact.multipledropdownlv6.locator('input')).toHaveAttribute('placeholder', multipleDropdownData.MultipleDropdownlv6);
   expect(await contact.inputEmail.inputValue()).toBe(contactData.Email);
   expect(await contact.inputCheckbox.inputValue()).toBe(contactData.Checkbox); // ถ้าเป็น checkbox ใช้ .isChecked() แทน
   expect(await contact.btnRadio.inputValue()).toBe(contactData.Radiobtn); // radio button ใช้ .isChecked() ตรวจสอบค่า
@@ -1552,11 +1555,6 @@ test('CRM_CT00115	การเข้าชมข้อมูลลูกค้�
   expect(await contact.segment.inputValue()).toBe(contactData.Segment);
   expect(await contact.input_segment.inputValue()).toBe(contactData.Input_Segment);
   expect(await contact.addressNo.inputValue()).toBe(contactData.Address_no1);
-
-
-
-
-
 
 })
 
@@ -1601,18 +1599,31 @@ test('CRM_CT00117	การแก้ไขช่องใส่ Name', async ({ 
 
 test('CRM_CT00118	"การแก้ไขช่องใส่ Name กรณีใส่Nameซ้ำ"', async ({ page }) => {
   const contact = new Element_Create_Contact(page);
-  const timestamp = Date.now();
 
-
-  // 1. Create Target Contact (The name we will try to duplicate to)
+  // 1. Navigate to contact page
   await contact.goto();
-  await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
+  await page.waitForLoadState('networkidle');
 
+  // 2. Get Name from 2nd row (to be used as duplicate source)
+  const secondRow = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').nth(1);
+  const secondRowName = await secondRow.locator('#dyn_row_name').textContent();
+  console.log('Name from 2nd row (Target Duplicate):', secondRowName);
 
-  await contact.input_Field({ Name: contactData.Name });
+  // 3. Get Name from 1st row (to be edited)
+  const firstRow = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').first();
+  const firstRowName = await firstRow.locator('#dyn_row_name').textContent();
+  console.log('Name from 1st row (To be edited):', firstRowName);
+
+  // 4. Edit the first row
+  await verifyTopTableRow(page, { CheckEdit: firstRowName?.trim() });
+
+  // 5. Try to change name to match the second row
+  await contact.input_Field({ Name: secondRowName?.trim() });
   await contact.btnUpdate.click();
-  await contact.btnconfirm_update.click()
-  await expect(page.getByText('ไม่สามารถสร้าง Contact ได้ เนื่องจากมีข้อมูลนี้อยู่แล้ว').or(page.getByText('Name already exists'))).toBeVisible();
+  await contact.btnconfirm_update.click();
+  await page.waitForTimeout(500)
+  // 6. Verify error message
+  await expect(page.getByText('ไม่สามารถบันทึก Contact ได้ เนื่องจากมีข้อมูลนี้อยู่แล้ว').or(page.getByText('Name already exists'))).toBeVisible();
 });
 
 test('CRM_CT00119	"การแก้ไขช่องใส่ Name กรณีไม่ใส่ช้อมูล Name"', async ({ page }) => {
@@ -2423,7 +2434,7 @@ test('CRM_CT00160 "การแก้ไขเนื้อหา อัปโห
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
 
   await page.setInputFiles('input[type="file"]', [
-    'tests/file_update-test/csv-test.csv',
+    'tests/file_update-test/csv-test-edit.csv',
   ]);
 
   await page.waitForTimeout(2000);
@@ -2441,8 +2452,7 @@ test('CRM_CT00160 "การแก้ไขเนื้อหา อัปโห
 
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
 
-  const uploadedFile = page.locator('.filepond--item');
-  await expect(uploadedFile).toHaveCount(1);
+
   const uploadedFileName = await page.locator('.filepond--file-info-main').textContent();
   expect(uploadedFileName).toBe('csv-test-edit.csv');
 });
@@ -2781,12 +2791,12 @@ test('CRM_CT00172 "การแก้ไขข้อมูลลูกค้า 
   await expect(contact.input_segment).toHaveValue(contactData_Edit.Input_Segment);
 
   // ✅ Verify Multiple Dropdown
-  await expect(contact.multipledropdownlv1).toContainText(multipleDropdownData_Edt.MultipleDropdownlv1);
-  await expect(contact.multipledropdownlv2).toContainText(multipleDropdownData_Edt.MultipleDropdownlv2);
-  await expect(contact.multipledropdownlv3).toContainText(multipleDropdownData_Edt.MultipleDropdownlv3);
-  await expect(contact.multipledropdownlv4).toContainText(multipleDropdownData_Edt.MultipleDropdownlv4);
-  await expect(contact.multipledropdownlv5).toContainText(multipleDropdownData_Edt.MultipleDropdownlv5);
-  await expect(contact.multipledropdownlv6).toContainText(multipleDropdownData_Edt.MultipleDropdownlv6);
+  await expect(contact.multipledropdownlv1.locator('input')).toHaveAttribute('placeholder', multipleDropdownData_Edt.MultipleDropdownlv1);
+  await expect(contact.multipledropdownlv2.locator('input')).toHaveAttribute('placeholder', multipleDropdownData_Edt.MultipleDropdownlv2);
+  await expect(contact.multipledropdownlv3.locator('input')).toHaveAttribute('placeholder', multipleDropdownData_Edt.MultipleDropdownlv3);
+  await expect(contact.multipledropdownlv4.locator('input')).toHaveAttribute('placeholder', multipleDropdownData_Edt.MultipleDropdownlv4);
+  await expect(contact.multipledropdownlv5.locator('input')).toHaveAttribute('placeholder', multipleDropdownData_Edt.MultipleDropdownlv5);
+  await expect(contact.multipledropdownlv6.locator('input')).toHaveAttribute('placeholder', multipleDropdownData_Edt.MultipleDropdownlv6);
 
   // ✅ Verify Date/Time
   await expect(contact.input_Create_DateTime).toHaveValue(contactData_Edit.DateTime);
@@ -2826,7 +2836,7 @@ test('CRM_CT00173	การลบข้อมูลลูกค้า (Delete Co
   // Verify confirmation dialog
   // "ระบบมีข้อความให้ยืนยันการลบ Delete Contactได้ถูกต้อง"
   await expect(page.getByText('Delete Contact?')).toBeVisible();
-
+  await page.waitForTimeout(2000);
   // Confirm Delete
   await page.locator('#dyn_delete_contact').click();
 

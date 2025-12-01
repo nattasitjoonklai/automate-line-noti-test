@@ -166,7 +166,7 @@ export class Element_Create_Contact {
 
     // Note
     this.inputNote = page.getByPlaceholder('note');
-    this.btnSendNote = this.inputNote.locator('..').locator('button');
+    this.btnSendNote = page.locator('#dyn_send_note')
     this.noteListItems = page.locator('.max-h-\\[30vh\\] > div');
 
   }
@@ -230,8 +230,17 @@ export class Element_Create_Contact {
     }
 
     if (hasValue(fields.Dropdown)) {
-      await this.dropdown.click();
-      await this.page.getByRole('option', { name: fields.Dropdown }).click();
+      // ✅ เช็คว่าค่าที่ต้องการเลือกตรงกับค่าที่มีอยู่แล้วหรือไม่
+      const inputLocator = this.dropdown.locator('input');
+      const currentPlaceholder = await inputLocator.getAttribute('placeholder');
+
+      if (currentPlaceholder !== fields.Dropdown) {
+        await this.dropdown.click();
+        await this.page.waitForTimeout(1000);
+        await this.page.getByRole('option', { name: fields.Dropdown }).click();
+      } else {
+        console.log(`Dropdown already has value "${fields.Dropdown}", skipping...`);
+      }
     }
     if (hasValue(fields.Segment)) {
       await this.segment.fill(fields.Segment)
@@ -249,6 +258,7 @@ export class Element_Create_Contact {
 
     if (hasValue(fields.Dropdown_group)) {
       await this.page.locator('#dyn_iu').click();
+      await this.page.waitForTimeout(1000);
       await this.page.getByRole('option', { name: fields.Dropdown_group, exact: true }).click();
     }
 
@@ -306,6 +316,7 @@ export class Element_Create_Contact {
         if (hasValue(fields[subKey])) {
           const subLocator = this.page.locator(`#dyn_subdistrict_${index}`).getByRole('combobox');
           await subLocator.click();
+          await this.page.waitForTimeout(500);
           await subLocator.fill(fields[subKey]);
           await this.page.locator('li.p-listbox-option').first().click();
         }
@@ -314,15 +325,19 @@ export class Element_Create_Contact {
         if (hasValue(fields[districtKey])) {
           const distLocator = this.page.locator(`#dyn_district_${index}`).getByRole('combobox');
           await distLocator.click();
+          await this.page.waitForTimeout(500);
           await distLocator.fill(fields[districtKey]);
           await this.page.locator('li.p-listbox-option').first().click();
         }
 
         // Fill Province
         if (hasValue(fields[provKey])) {
+
           const provLocator = this.page.locator(`#dyn_province_${index}`).getByRole('combobox');
           await provLocator.click();
+          await this.page.waitForTimeout(500);
           await provLocator.fill(fields[provKey]);
+          await this.page.waitForTimeout(1000);
           await this.page.locator('li.p-listbox-option').first().click();
         }
 
@@ -330,6 +345,7 @@ export class Element_Create_Contact {
         if (hasValue(fields[zipKey])) {
           const zipLocator = this.page.locator(`#dyn_zipcode_${index}`).getByRole('combobox');
           await zipLocator.click();
+          await this.page.waitForTimeout(500);
           await zipLocator.fill(fields[zipKey]);
           await this.page.locator('li.p-listbox-option').first().click();
         }
@@ -378,8 +394,17 @@ export class Element_Create_Contact {
 
       // รอ dropdown ปรากฏ
       await dropdownLocator.waitFor({ state: "visible", timeout: 5000 });
-      await dropdownLocator.click();
 
+      // ✅ เช็คว่าค่าที่ต้องการเลือกตรงกับค่าที่มีอยู่แล้วหรือไม่
+      const inputLocator = dropdownLocator.locator('input');
+      const currentPlaceholder = await inputLocator.getAttribute('placeholder');
+
+      if (currentPlaceholder === String(value)) {
+        console.log(`${key} already has value "${value}", skipping...`);
+        continue; // ข้ามไปยัง level ถัดไป
+      }
+
+      await dropdownLocator.click();
 
       // รอ option ปรากฏแบบ retry
       const optionLocator = this.page.getByRole("option", { name: String(value) });
