@@ -35,40 +35,50 @@ const contactData = {
   Address_zipcode1_Edit: "10900",
   Change_name: 'TestEdit0',
   Change_phone: '0111111',
-  text_input: 'text_input'
+  text_input: 'text_input',
+  Phone_1: '0912334'
   // Btn_group: "1",
   // Dropdown_group: "2",
   // text_group: "Group ทดสอบ"
 };
 
 const contact_Search_Data = {
-  Name: "TestData0",
+  Name: "NattasitTest",
   Dropdown: "ทดสอบตัวเลือก 1",
   Dropdown1_Edit: "ทดสอบตัวเลือก 2",
-  Phone: "01234567",
-  Email: "testmail01@gmail.com",
-  Datamasking: "12332313",
+  MultipleDropdownlv1: "Level1-1",
+  MultipleDropdownlv2: "Level2-1-1",
+  MultipleDropdownlv3: "Level3-1-1",
+  MultipleDropdownlv4: "Level 4_3_1_1",
+  MultipleDropdownlv5: "Level 5_4_3_2_1",
+  MultipleDropdownlv6: "Level 6_5_4_3_1_1",
+  Phone: "099999912",
+  Email: "Nattasit@gmail.com",
+  Checkbox: "true",
+  Datamasking: "tester1234",
   Radiobtn: "value1",
   Radiobtn1_Edit: "value2",
-  Checkbox: true,
-  Segment: "ทดสอบ Segment",
-  Input_Segment: "ทดสอบการใช้งาน Input Segment",
   DateTime: "2025-11-25 14:58",
   Date: "2025-11-24",
+  Segment: "ทดสอบ Segment",
   Time: "13:57",
-  Address_no1: "123456",
+  Input_Segment: "ทดสอบการใช้งาน Input Segment",
+  Address_no: "ทดสอบการสร้าง Address 123456",
   Address_no1_Edit: "77/1",
-  Address_province1: "กรุงเทพมหานคร",
+  Address_province: "กรุงเทพมหานคร",
   Address_province1_Edit: "นนทบุรี",
-  Address_subdistrict1: "ลาดยาว",
+  Address_subdistrict: "หลักสอง",
   Address_subdistrict1_Edit: "หนองบอน",
-  Address_district1: "บางกอกน้อย",
+  Address_district: "บางแค",
   Address_district1_Edit: "บางแค",
-  Address_zipcode1: "10900",
+  Address_zipcode: "10160",
   Address_zipcode1_Edit: "10900",
   Change_name: 'TestEdit0',
   Change_phone: '0111111',
-  text_input: 'text_input'
+  Text_input: 'text_input',
+
+  Phone_1: '0912334'
+
   // Btn_group: "1",
   // Dropdown_group: "2",
   // text_group: "Group ทดสอบ"
@@ -282,7 +292,7 @@ test('CRM_CT00006   "การค้นหาช่องใส่ Name กร�
   await expect(page.getByRole('cell', { name: 'No Data' })).toBeVisible();
 });
 test('CRM_CT00007   "การค้นหาช่องใส่ Phone กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
-  await ContactAPI.searchAndVerify(page, request, { Phone: "123123213" });
+  await ContactAPI.searchAndVerify(page, request, { Phone: contact_Search_Data.Phone });
 
 });
 test('CRM_CT00008   "การค้นหาช่องใส่ Phone กรณีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page }) => {
@@ -300,7 +310,7 @@ test('CRM_CT00009   "การค้นหาช่องใส่ Phone กร�
 
 });
 test('CRM_CT00010   "การค้นหาช่องใส่ Email กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
-  await ContactAPI.searchAndVerify(page, request, { Email: "nattasit@cloudsoft.co.th" });
+  await ContactAPI.searchAndVerify(page, request, { Email: contact_Search_Data.Email });
 
 });
 test('CRM_CT00011   "การค้นหาช่องใส่ Email กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page, request }) => {
@@ -320,7 +330,7 @@ test('CRM_CT00012   "การค้นหาช่องใส่ Email กร�
 
 });
 test('CRM_CT00013   "การค้นหาช่องใส่ Address ที่อยู่/บ้านเลขที่ กรณีมีรายชื่อลูกค้าอยู่ในระบบ""', async ({ page, request }) => {
-  await ContactAPI.searchAndVerify(page, request, { Address_no: "88/12" });
+  await ContactAPI.searchAndVerify(page, request, { Address_no: contact_Search_Data.Address_no });
 });
 
 test('CRM_CT00014   "การค้นหาช่องใส่ Address ที่อยู่/บ้านเลขที่ กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ""', async ({ page }) => {
@@ -331,7 +341,7 @@ test('CRM_CT00014   "การค้นหาช่องใส่ Address ท�
 });
 
 test('CRM_CT00015   "การค้นหาช่องใส่ Address ตำบล/แขวงกรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
-  await ContactAPI.searchAndVerify(page, request, { Address_subdistrict: "บางละมุง" });
+  await ContactAPI.searchAndVerify(page, request, { Address_subdistrict: contact_Search_Data.Address_subdistrict });
 });
 
 test('CRM_CT00016 "การค้นหาช่องใส่ Address ตำบล/แขวง กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page }) => {
@@ -342,7 +352,7 @@ test('CRM_CT00016 "การค้นหาช่องใส่ Address ตำ�
 });
 
 test('CRM_CT00017 "การค้นหาช่องใส่ Address อำเภอ/เขต กรณีมีรายชื่อลูกค้าอยู่ในระบบ""', async ({ page, request }) => {
-  await ContactAPI.searchAndVerify(page, request, { Address_district: "บางละมุง" }); // Fixed key from Address_subdistrict to Address_district if API supports it, or check Element_Contact mapping
+  await ContactAPI.searchAndVerify(page, request, { Address_district: contact_Search_Data.Address_district }); // Fixed key from Address_subdistrict to Address_district if API supports it, or check Element_Contact mapping
 });
 
 test('CRM_CT00018   "การค้นหาช่องใส่ Address อำเภอ/เขต กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ""', async ({ page }) => {
@@ -378,7 +388,7 @@ test('CRM_CT00023  "การค้นหาช่องเลือก Dropdown
   // Assuming ContactAPI supports Dropdown_value or we use Element_Contact
   // Existing code used ContactAPI, let's stick to it if it works, or use Element_Contact if API helper is missing
   // Given previous tests used ContactAPI, I'll assume it works.
-  await ContactAPI.searchAndVerify(page, request, { Dropdown_value: "ทดสอบตัวเลือก 1" });
+  await ContactAPI.searchAndVerify(page, request, { Dropdown_value: contact_Search_Data.Dropdown });
 });
 
 test('CRM_CT00024   "การค้นหาช่องเลือก Dropdown กรณีข้อมูลไม่มีอยู่ในระบบ"', async ({ page }) => {
@@ -389,7 +399,7 @@ test('CRM_CT00024   "การค้นหาช่องเลือก Dropdow
 });
 
 test('CRM_CT00025   "การค้นหาช่องเลือก Collection Level 1 กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
-  await ContactAPI.searchAndVerify(page, request, { Dropdown_mutlple_lv1: "Level1-1" });
+  await ContactAPI.searchAndVerify(page, request, { Dropdown_mutlple_lv1: contact_Search_Data.MultipleDropdownlv1 });
 });
 
 test('CRM_CT00026	"การค้นหาช่องเลือก Collection Level 1 กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ""', async ({ page }) => {
@@ -400,7 +410,7 @@ test('CRM_CT00026	"การค้นหาช่องเลือก Collectio
 });
 
 test('CRM_CT00027  "การค้นหาช่องเลือก Collection Level 2 กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
-  await ContactAPI.searchAndVerify(page, request, { Dropdown_mutlple_lv1: "Level1-1", Dropdown_mutlple_lv2: "Level2-1-1" });
+  await ContactAPI.searchAndVerify(page, request, { Dropdown_mutlple_lv1: contact_Search_Data.MultipleDropdownlv1, Dropdown_mutlple_lv2: contact_Search_Data.MultipleDropdownlv2 });
 });
 
 test('CRM_CT00028	"การค้นหาช่องเลือก Collection Level 2 กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ""', async ({ page }) => {
@@ -411,7 +421,7 @@ test('CRM_CT00028	"การค้นหาช่องเลือก Collectio
 });
 
 test('CRM_CT00029  "การค้นหาช่องเลือก Collection Level 3 กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
-  await ContactAPI.searchAndVerify(page, request, { Dropdown_mutlple_lv1: "Level1-1", Dropdown_mutlple_lv2: "Level2-1-1", Dropdown_mutlple_lv3: "Level3-1-1" });
+  await ContactAPI.searchAndVerify(page, request, { Dropdown_mutlple_lv1: contact_Search_Data.MultipleDropdownlv1, Dropdown_mutlple_lv2: contact_Search_Data.MultipleDropdownlv2, Dropdown_mutlple_lv3: contact_Search_Data.MultipleDropdownlv3 });
 });
 
 test('CRM_CT00030	"การค้นหาช่องเลือก Collection Level 3 กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ""', async ({ page }) => {
@@ -423,10 +433,10 @@ test('CRM_CT00030	"การค้นหาช่องเลือก Collectio
 test('CRM_CT00031  "การค้นหาช่องเลือก Collection Level 4 กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
   await ContactAPI.searchAndVerify(page, request,
     {
-      Dropdown_mutlple_lv1: 'Level1-1',
-      Dropdown_mutlple_lv2: 'Level2-1-1',
-      Dropdown_mutlple_lv3: 'Level3-1-1',
-      Dropdown_mutlple_lv4: 'Level 4_3_1_1'
+      Dropdown_mutlple_lv1: contact_Search_Data.MultipleDropdownlv1,
+      Dropdown_mutlple_lv2: contact_Search_Data.MultipleDropdownlv2,
+      Dropdown_mutlple_lv3: contact_Search_Data.MultipleDropdownlv3,
+      Dropdown_mutlple_lv4: contact_Search_Data.MultipleDropdownlv4
     });
 });
 test('CRM_CT00032	"การค้นหาช่องเลือก Collection Level 4 กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ""', async ({ page }) => {
@@ -445,11 +455,11 @@ test('CRM_CT00032	"การค้นหาช่องเลือก Collectio
 test('CRM_CT00033  "การค้นหาช่องเลือก Collection Level 5 กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
   await ContactAPI.searchAndVerify(page, request,
     {
-      Dropdown_mutlple_lv1: 'Level1-1',
-      Dropdown_mutlple_lv2: 'Level2-1-1',
-      Dropdown_mutlple_lv3: 'Level3-1-1',
-      Dropdown_mutlple_lv4: 'Level 4_3_1_1',
-      Dropdown_mutlple_lv5: 'Level 5_4_3_2_1',
+      Dropdown_mutlple_lv1: contact_Search_Data.MultipleDropdownlv1,
+      Dropdown_mutlple_lv2: contact_Search_Data.MultipleDropdownlv2,
+      Dropdown_mutlple_lv3: contact_Search_Data.MultipleDropdownlv3,
+      Dropdown_mutlple_lv4: contact_Search_Data.MultipleDropdownlv4,
+      Dropdown_mutlple_lv5: contact_Search_Data.MultipleDropdownlv5,
     });
 });
 test('CRM_CT00034	"การค้นหาช่องเลือก Collection Level 5 กรณีไม่มีรายชื่อลูกค้าอยู่ในระบบ""', async ({ page }) => {
@@ -469,12 +479,12 @@ test('CRM_CT00034	"การค้นหาช่องเลือก Collectio
 test('CRM_CT00035  "การค้นหาช่องเลือก Collection Level 6 กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
   await ContactAPI.searchAndVerify(page, request,
     {
-      Dropdown_mutlple_lv1: 'Level1-1',
-      Dropdown_mutlple_lv2: 'Level2-1-1',
-      Dropdown_mutlple_lv3: 'Level3-1-1',
-      Dropdown_mutlple_lv4: 'Level 4_3_1_1',
-      Dropdown_mutlple_lv5: 'Level 5_4_3_2_1',
-      Dropdown_mutlple_lv6: 'Level 6_5_4_3_1_1'
+      Dropdown_mutlple_lv1: contact_Search_Data.MultipleDropdownlv1,
+      Dropdown_mutlple_lv2: contact_Search_Data.MultipleDropdownlv2,
+      Dropdown_mutlple_lv3: contact_Search_Data.MultipleDropdownlv3,
+      Dropdown_mutlple_lv4: contact_Search_Data.MultipleDropdownlv4,
+      Dropdown_mutlple_lv5: contact_Search_Data.MultipleDropdownlv5,
+      Dropdown_mutlple_lv6: contact_Search_Data.MultipleDropdownlv6
     });
 });
 test('CRM_CT00036	"การค้นหาช่องเลือก Collection Level 6 กรณีไม่มีรายชื่อลูกค้าอยู่ในระบบ""', async ({ page }) => {
@@ -494,7 +504,7 @@ test('CRM_CT00036	"การค้นหาช่องเลือก Collectio
 });
 test('CRM_CT00037	"การค้นหาช่อง Data Masking กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
 
-  await ContactAPI.searchAndVerify(page, request, { Datamasking: "asking" });
+  await ContactAPI.searchAndVerify(page, request, { Datamasking: contact_Search_Data.Datamasking });
 });
 test('CRM_CT00038	"การค้นหาช่อง Data Masking กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page, request }) => {
 
@@ -505,7 +515,7 @@ test('CRM_CT00038	"การค้นหาช่อง Data Masking กรณ�
 });
 test('CRM_CT00039	"การค้นหาช่อง Check Box กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
 
-  await ContactAPI.searchAndVerify(page, request, { Checkbox_TrueFalse: "true" });
+  await ContactAPI.searchAndVerify(page, request, { Checkbox_TrueFalse: contact_Search_Data.Checkbox });
 });
 test('CRM_CT00040	"การค้นหาช่อง Check Box กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page, request }) => {
 
@@ -516,7 +526,7 @@ test('CRM_CT00040	"การค้นหาช่อง Check Box กรณี�
 });
 test('CRM_CT00041	"การค้นหาช่อง Radio Button กรณีมีรายชื่อลูกค้าอยู่ในระบบ""', async ({ page, request }) => {
 
-  await ContactAPI.searchAndVerify(page, request, { Radio: "value1" });
+  await ContactAPI.searchAndVerify(page, request, { Radio: contact_Search_Data.Radiobtn });
 });
 test('CRM_CT00042	"การค้นหาช่อง Radio Button กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ""', async ({ page, request }) => {
 
@@ -527,7 +537,7 @@ test('CRM_CT00042	"การค้นหาช่อง Radio Button กรณ�
 });
 test('CRM_CT00043	"การค้นหาช่อง Date Time กรณีมีรายชื่อลูกค้าอยู่ในระบบ"""', async ({ page, request }) => {
 
-  await ContactAPI.searchAndVerify(page, request, { Datetime: "2025-11-13 15:53" });
+  await ContactAPI.searchAndVerify(page, request, { Datetime: contact_Search_Data.DateTime });
 });
 test('CRM_CT00044	"การค้นหาช่อง Date Time กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page }) => {
   const contact = new Element_Contact(page);
@@ -538,7 +548,7 @@ test('CRM_CT00044	"การค้นหาช่อง Date Time กรณี�
 
 test('CRM_CT00045	"การค้นหาช่อง Date กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
 
-  await ContactAPI.searchAndVerify(page, request, { Date: "2025-11-13" });
+  await ContactAPI.searchAndVerify(page, request, { Date: contact_Search_Data.Date });
 
 });
 test('CRM_CT00046	"การค้นหาช่อง Date กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page }) => {
@@ -549,7 +559,7 @@ test('CRM_CT00046	"การค้นหาช่อง Date กรณีมี�
 });
 test('CRM_CT00047	"การค้นหาช่อง Time กรณีมีรายชื่อลูกค้าอยู่ในระบบ""', async ({ page, request }) => {
 
-  await ContactAPI.searchAndVerify(page, request, { Time: "15:53" });
+  await ContactAPI.searchAndVerify(page, request, { Time: contact_Search_Data.Time });
 });
 test('CRM_CT00048	"การค้นหาช่อง Time กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page }) => {
   const contact = new Element_Contact(page);
@@ -558,7 +568,7 @@ test('CRM_CT00048	"การค้นหาช่อง Time กรณีมี�
   await contact.expectNoData();
 });
 test('CRM_CT00049	"การค้นหาช่อง Segment กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
-  await ContactAPI.searchAndVerify(page, request, { Segment: "ทดสอบ Segment" });
+  await ContactAPI.searchAndVerify(page, request, { Segment: contact_Search_Data.Segment });
 
 });
 test('CRM_CT00050	"การค้นหาช่อง Segment กรณีมีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page }) => {
@@ -717,15 +727,15 @@ test('CRM_CT00058	การใส่ข้อมูลช่อง Phone" ', asy
   await contact.goto();
   await contact.btnCreateContact.click()
 
-  await contact.inputPhone.fill('0917777')
-  await expect(contact.inputPhone).toHaveValue('0917777');
+  await contact.inputPhone.fill(contactData.Phone)
+  await expect(contact.inputPhone).toHaveValue(contactData.Phone);
 
 });
 test('CRM_CT00059	"การใส่ข้อมูลช่อง Phone กรณีใส่ตัวอักษรหรืออักขระพิเศษ" " ', async ({ page }) => {
   const contact = new Element_Create_Contact(page);
   await contact.goto();
   await contact.btnCreateContact.click()
-  await contact.inputPhone.fill('sadsada')
+  await contact.inputPhone.fill('sadsad!@a')
   await contact.submmit_contact.click()
   await expect(contact.error_msg_val).toBeVisible();
 
@@ -736,6 +746,7 @@ test('CRM_CT00060	"การใส่ข้อมูลช่อง Phone กร
   await contact.btnCreateContact.click()
   await contact.inputName.fill('1231456')
   await contact.submmit_contact.click()
+  await page.waitForTimeout(1000)
   const visible = await contact.error_msg_empty.isVisible(); // ต้องเป็น Locator
   expect(visible).toBe(true);
 
@@ -746,15 +757,15 @@ test('CRM_CT00061	การเพิ่มช่องใส่ Phone (ปุ่
   await contact.btnCreateContact.click()
   await page.getByRole('button', { name: 'Add Phone' }).click();
   await page.locator('#dyn_phone_1').click();
-  await page.locator('#dyn_phone_1').fill('231231313');
-  await expect(page.locator('#dyn_phone_1')).toHaveValue('231231313');
+  await page.locator('#dyn_phone_1').fill(contact_Search_Data.Phone_1);
+  await expect(page.locator('#dyn_phone_1')).toHaveValue(contact_Search_Data.Phone_1);
 });
 test('CRM_CT00062	การใส่ข้อมูลช่อง Email " ', async ({ page }) => {
   const contact = new Element_Create_Contact(page);
   await contact.goto();
   await contact.btnCreateContact.click()
-  await contact.inputEmail.fill('nattasit@cloudsoft.co.th')
-  await expect(contact.inputEmail).toHaveValue('nattasit@cloudsoft.co.th')
+  await contact.inputEmail.fill(contactData.Email)
+  await expect(contact.inputEmail).toHaveValue(contactData.Email)
 });
 test('CRM_CT00063	"การใส่ข้อมูลช่อง Email กรณีกรอกไม่ตรงรูปแบบ Email " " ', async ({ page }) => {
   const contact = new Element_Create_Contact(page);
@@ -793,10 +804,11 @@ test('CRM_CT00066	กรณีค้นหา ตำบล/แขวง ต้�
   await contact.btn_address.click();
   await page.waitForTimeout(1000)
   await page.locator('.grid.grid-cols-2 > div:nth-child(2) > #dropdownEl > .relative > .w-8').click()
-  await page.getByRole('combobox', { name: 'ค้นหา ตำบล/แขวง' }).fill('หลักสอง');
+  await page.getByRole('combobox', { name: 'ค้นหา ตำบล/แขวง' }).fill(contact_Search_Data.Address_subdistrict);
 
   await page.waitForTimeout(3000)
-  await page.getByRole('option', { name: 'หลักสอง » บางแค » กรุงเทพมหานคร »' }).click()
+  await page.getByRole('option', { name: 'หลักสอง » บางแค » กรุงเทพมหานคร »' }).waitFor({ state: 'visible' }).then(el => el.click());
+
 
   expect(await page.getByRole('combobox', { name: 'หลักสอง' })).toBeVisible()
 
@@ -808,11 +820,11 @@ test('CRM_CT00067	กรณีค้นหา อำเภอ/เขต ต้�
   await contact.btnCreateContact.click()
   await contact.btn_address.click();
   await page.waitForTimeout(1000)
-  await page.getByRole('combobox', { name: 'ค้นหา อำเภอ / เขต' }).fill('บางแค');
+  await page.getByRole('combobox', { name: 'ค้นหา อำเภอ / เขต' }).fill(contact_Search_Data.Address_district);
   await page.waitForTimeout(1000)
   await page.locator('.grid.grid-cols-2 > div:nth-child(3) > #dropdownEl > .relative > .w-8').click()
   await page.getByText('บางแค » บางแค » กรุงเทพมหานคร »').click();
-  await expect(page.getByRole('combobox', { name: 'บางแค' }).nth(1)).toBeVisible()
+  await expect(page.getByRole('combobox', { name: contactData.Address_district1 }).nth(1)).toBeVisible()
 });
 test('CRM_CT00068	กรณีค้นหา จังหวัด ต้องใส่ตัวอักษรที่อยู่ในdropdown ข้อมูลสถานที่ถึงแสดง" ', async ({ page }) => {
   const contact = new Element_Create_Contact(page);
@@ -838,7 +850,7 @@ test('CRM_CT00069	กรณีค้นหา รหัสไปรษณีย�
   await page.waitForTimeout(1000)
   await page.locator('.grid.grid-cols-2 > div:nth-child(5) > #dropdownEl > .relative > .w-8 > .lucide').click();
   await page.getByRole('combobox', { name: 'ค้นหา รหัสไปรษณีย์' }).click();
-  await page.getByRole('combobox', { name: 'ค้นหา รหัสไปรษณีย์' }).fill('10160');
+  await page.getByRole('combobox', { name: 'ค้นหา รหัสไปรษณีย์' }).fill(contact_Search_Data.Address_zipcode);
   await page.getByRole('option', { name: 'บางแค » บางแค » กรุงเทพมหานคร »' }).click()
 
 
@@ -876,7 +888,6 @@ test('CRM_CT00071	การเลือกข้อมูลช่อง Dropdow
   const contact = new Element_Create_Contact(page);
   await contact.goto();
   await contact.btnCreateContact.click()
-  await contact.btn_address.click();
 
 
   await page.getByRole('combobox').filter({ hasText: /^$/ }).nth(5).click();
@@ -894,29 +905,29 @@ test('CRM_CT00072	การเลือกข้อมูลช่อง Multi D
 
   // Use the fillInputMultipleDropdown method from the class
   await contact.fillInputMultipleDropdown({
-    MultipleDropdownlv1: 'Level1-1',
-    MultipleDropdownlv2: 'Level2-1-',
-    MultipleDropdownlv3: 'Level3-1-1',
-    MultipleDropdownlv4: 'Level 4_3_1_1',
-    MultipleDropdownlv5: 'Level 5_4_3_2_1',
-    MultipleDropdownlv6: 'Level 6_5_4_3_1_1'
+    MultipleDropdownlv1: multipleDropdownData.MultipleDropdownlv1,
+    MultipleDropdownlv2: multipleDropdownData.MultipleDropdownlv2,
+    MultipleDropdownlv3: multipleDropdownData.MultipleDropdownlv3,
+    MultipleDropdownlv4: multipleDropdownData.MultipleDropdownlv4,
+    MultipleDropdownlv5: multipleDropdownData.MultipleDropdownlv5,
+    MultipleDropdownlv6: multipleDropdownData.MultipleDropdownlv6
   });
 
   // Verify all levels are selected
-  expect(await page.getByRole('combobox', { name: 'Level1-' })).toBeVisible();
-  expect(await page.getByRole('combobox', { name: 'Level2-1-' })).toBeVisible();
-  expect(await page.getByRole('combobox', { name: 'Level3-1-' })).toBeVisible();
-  expect(await page.getByRole('combobox', { name: 'Level 4_3_1_1' })).toBeVisible();
-  expect(await page.getByRole('combobox', { name: 'Level 5_4_3_2_1' })).toBeVisible();
-  expect(await page.getByRole('combobox', { name: 'Level 6_5_4_3_1_1' })).toBeVisible();
+  expect(await page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv1 })).toBeVisible();
+  expect(await page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv2 })).toBeVisible();
+  expect(await page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv3 })).toBeVisible();
+  expect(await page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv4 })).toBeVisible();
+  expect(await page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv5 })).toBeVisible();
+  expect(await page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv6 })).toBeVisible();
 });
 test('CRM_CT00073	การใส่ข้อมูลช่อง Text Input" ', async ({ page }) => {
   const contact = new Element_Create_Contact(page);
   await contact.goto();
   await contact.btnCreateContact.click()
 
-  await contact.inputName.fill('ทดสอบ')
-  await expect(contact.inputName).toHaveValue('ทดสอบ');
+  await contact.inputName.fill(contactData.text_input)
+  await expect(contact.inputName).toHaveValue(contactData.text_input);
 
 });
 test('CRM_CT00074	"การใส่ข้อมูลช่อง Text Input กรณีใส่ Text Input ความยาวตัวอักษร สูงสุด 10 The maximum length allowed is 10"" ', async ({ page }) => {
@@ -950,8 +961,8 @@ test('CRM_CT00077	"การติ๊กเลือกRadio Button " " ', async
   const contact = new Element_Create_Contact(page);
   await contact.goto();
   await contact.btnCreateContact.click()
-  await page.getByRole('radio', { name: 'value2' }).check();
-  const radioLabel = page.getByLabel('value2'); // Playwright จับ input ที่ for="dyn_radiobtn_1"
+  await page.getByRole('radio', { name: contactData.Radiobtn }).check();
+  const radioLabel = page.getByLabel(contactData.Radiobtn); // Playwright จับ input ที่ for="dyn_radiobtn_1"
   await expect(radioLabel).toBeChecked();
 
 });
@@ -987,9 +998,9 @@ test('CRM_CT00080	การใส่ข้อมูลวันที่แล�
   await contact.btnCreateContact.click()
 
   await page.getByRole('combobox', { name: 'datetime', exact: true }).click();
-  await contact.input_Field({ DateTime: '2025-11-20 17:09' })
+  await contact.input_Field({ DateTime: contactData.DateTime })
   const datetime = await page.getByRole('combobox', { name: 'datetime', exact: true }).getAttribute('value');
-  expect(datetime).toBe('2025-11-20 17:09')
+  expect(datetime).toBe(contactData.DateTime)
 });
 test('CRM_CT00081	การใส่ข้อมูลวันที่ Date " ', async ({ page }) => {
   const contact = new Element_Create_Contact(page);
@@ -997,7 +1008,7 @@ test('CRM_CT00081	การใส่ข้อมูลวันที่ Date " 
   await contact.btnCreateContact.click()
   await page.getByRole('combobox', { name: 'date of birth', exact: true }).click();
 
-  await page.getByRole('combobox', { name: 'date of birth', exact: true }).fill('2025-11-24')
+  await page.getByRole('combobox', { name: 'date of birth', exact: true }).fill(contactData.Date)
 
   const datetime = await page.getByRole('combobox', { name: 'date of birth', exact: true }).getAttribute('value');
   console.log("date time", datetime);
@@ -1011,10 +1022,10 @@ test('CRM_CT00082	การใส่ข้อมูลเวลา Time " ', asy
   const contact = new Element_Create_Contact(page);
   await contact.goto();
   await contact.btnCreateContact.click()
-  await page.getByRole('combobox', { name: 'Time', exact: true }).fill('17:18')
+  await page.getByRole('combobox', { name: 'Time', exact: true }).fill(contactData.Time)
   const datetime = await page.getByRole('combobox', { name: 'Time', exact: true }).getAttribute('value');
 
-  expect(datetime).toBe('17:18')
+  expect(datetime).toBe(contact_Search_Data.Time)
 });
 test('CRM_CT00083	ฺปุ่มกดลิ้งค์ไปหน้าอื่น Button " ', async ({ page }) => {
   const contact = new Element_Create_Contact(page);
@@ -1032,7 +1043,7 @@ test('CRM_CT00084	"การเลือกกลุ่มและข้อม�
   await contact.btnCreateContact.click()
 
 
-  await page.getByRole('textbox', { name: 'segment', exact: true }).fill('ทดสอบ Segment');
+  await page.getByRole('textbox', { name: 'segment', exact: true }).fill(contactData.Segment);
   expect(await page.locator('#dyn_text_segment')).toBeVisible()
 
 
@@ -1588,7 +1599,7 @@ test('CRM_CT00117	การแก้ไขช่องใส่ Name', async ({ 
 
 })
 
-test.only('CRM_CT00118	"การแก้ไขช่องใส่ Name กรณีใส่Nameซ้ำ"', async ({ page }) => {
+test('CRM_CT00118	"การแก้ไขช่องใส่ Name กรณีใส่Nameซ้ำ"', async ({ page }) => {
   const contact = new Element_Create_Contact(page);
   const timestamp = Date.now();
 

@@ -33,7 +33,7 @@ export type SearchParams = {
 };
 let json_data: any = {};
 export class ContactAPI {
-  static token = "RhVacFdlMJuUOShMij97L2We4ZDcJDOzZh0EmCA0D_lt6Qk5FiQ5ZIEDrRJANq1C4pJog0AsMGOKpxKkRJd49VXtu83Ukaspw3KdHbL0xYMZrj5Y"; // <<-- คุณใส่ token ไว้ที่นี่ครั้งเดียว
+  static token = "ZbWxQ-E2ha5-UBFpOj9PMBwtQiqEuyOW92F8UChgxaqEcG0M0xRrtZw-qN7hUOVigitD7puMTzHwjYXO2jCxGAh1-5jLrTrj-GqWn2B8btBM9D5A";
 
   static async fetchContacts(request: APIRequestContext, params: SearchParams) {
     const apiParams: Record<string, string> = {
@@ -48,7 +48,7 @@ export class ContactAPI {
     if (params.Email) apiParams["data.email"] = params.Email;
     if (params.Name) apiParams["data.name"] = params.Name;
     if (params.Phone) apiParams["data.phone"] = params.Phone;
-    if (params.Address_no) apiParams["data.address.no"] = params.Address_no;
+    if (params.Address_no) apiParams["data.address.address"] = params.Address_no;
     if (params.Address_district) apiParams["data.address.district"] = params.Address_district;
     if (params.Address_subdistrict) apiParams["data.address.subdistrict"] = params.Address_subdistrict;
     if (params.Address_province) apiParams["data.address.province"] = params.Address_province;
@@ -165,14 +165,20 @@ export class ContactAPI {
 
     // 5) clear date
     await page.getByRole("combobox", { name: "Select Start Datetime" }).click();
+    await page.waitForTimeout(2000);
     await page.getByLabel("Clear").click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(5000);
     await page.getByRole("combobox", { name: "Select End Datetime" }).click();
+    await page.waitForTimeout(2000);
     await page.getByLabel("Clear").click();
-
+    await page.waitForTimeout(2000);
     // 6) Search
     await page.getByRole('button', { name: 'Search' }).nth(1).click();
     await page.waitForLoadState('networkidle');
+
+    // Wait for table to render (prevent false positive when expecting 0 rows but data is loading)
+    await page.waitForTimeout(2000);
+
     // 1) ดึง rows จาก table
     const rows = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]');
 
