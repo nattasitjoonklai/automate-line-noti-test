@@ -206,7 +206,8 @@ test('CRM_CT00001 การเข้าหน้า Contact', async ({ page }) =
 test('CRM_CT00002 การเข้าหน้าค้นหาลูกค้า Search', async ({ page }) => {
   const contact = new Element_Contact(page);
   await page.goto(BaseUrl + '/contact');
-  await page.waitForLoadState("networkidle");
+  // await page.waitForLoadState("networkidle");
+  await expect(contact.btnSearch).toBeVisible();
 
   await contact.btnSearch.click()
   await expect(contact.inputStartDate).toBeVisible();
@@ -577,8 +578,8 @@ test('CRM_CT00050	"การค้นหาช่อง Segment กรณีม�
   await contact.btnSearch.click();
   await page.locator('#dyn_name_segment').fill('NonExistentSegment12345');
   await page.getByRole('button', { name: 'Search' }).nth(1).click();
-  await page.waitForTimeout(2000);
-  await contact.expectNoData();
+  // await page.waitForTimeout(2000);
+  await expect(page.getByRole('cell', { name: 'No Data' })).toBeVisible();
 });
 
 // test('CRM_CT00051	การค้นหาข้อมูล (ปุ่มSearch) ""', async ({ page }) => {
@@ -628,8 +629,7 @@ test('CRM_CT00053	การล้างข้อมูลที่กรอก (
 
   // Click Clear
   await contact.btnclear.click();
-  await page.waitForTimeout(1000); // Wait for clear action to complete
-
+  // await page.waitForTimeout(1000); // Wait for clear action to complete
   // Verify fields are cleared
   await expect(contact.inputName).toHaveValue('');
   await expect(contact.inputPhone).toHaveValue('');
@@ -704,10 +704,10 @@ test('CRM_CT00056	"การใส่ข้อมูล ช่องName กร�
   // input_Field likely handles most, let's ensure we submit
 
   await contact.submmit_contact.click();
-  await page.waitForTimeout(1000);
+  // await page.waitForTimeout(1000);
   // await page.pause()
   await contact.btnconfirm_create.click()
-  await page.waitForTimeout(500)
+  // await page.waitForTimeout(500)
   // Verify error message
   // Expecting a message indicating the name already exists
   await expect(page.getByText('Name already exists').or(page.getByText('มีข้อมูลนี้อยู่แล้ว'))).toBeVisible();
@@ -746,7 +746,7 @@ test('CRM_CT00060	"การใส่ข้อมูลช่อง Phone กร
   await contact.btnCreateContact.click()
   await contact.inputName.fill('1231456')
   await contact.submmit_contact.click()
-  await page.waitForTimeout(1000)
+  // await page.waitForTimeout(1000)
   const visible = await contact.error_msg_empty.isVisible(); // ต้องเป็น Locator
   expect(visible).toBe(true);
 
@@ -802,11 +802,11 @@ test('CRM_CT00066	กรณีค้นหา ตำบล/แขวง ต้�
   await contact.btnCreateContact.click()
 
   await contact.btn_address.click();
-  await page.waitForTimeout(1000)
+  // await page.waitForTimeout(1000)
   await page.locator('.grid.grid-cols-2 > div:nth-child(2) > #dropdownEl > .relative > .w-8').click()
   await page.getByRole('combobox', { name: 'ค้นหา ตำบล/แขวง' }).fill(contact_Search_Data.Address_subdistrict);
 
-  await page.waitForTimeout(3000)
+  // await page.waitForTimeout(3000)
   await page.getByRole('option', { name: 'หลักสอง » บางแค » กรุงเทพมหานคร »' }).click();
 
 
@@ -819,9 +819,9 @@ test('CRM_CT00067	กรณีค้นหา อำเภอ/เขต ต้�
   await contact.goto();
   await contact.btnCreateContact.click()
   await contact.btn_address.click();
-  await page.waitForTimeout(1000)
+  // await page.waitForTimeout(1000)
   await page.getByRole('combobox', { name: 'ค้นหา อำเภอ / เขต' }).fill(contact_Search_Data.Address_district);
-  await page.waitForTimeout(1000)
+  // await page.waitForTimeout(1000)
   await page.locator('.grid.grid-cols-2 > div:nth-child(3) > #dropdownEl > .relative > .w-8').click()
   await page.getByText('บางแค » บางแค » กรุงเทพมหานคร »').click();
   await expect(page.getByRole('combobox', { name: contactData.Address_district1 }).nth(1)).toBeVisible()
@@ -831,9 +831,9 @@ test('CRM_CT00068	กรณีค้นหา จังหวัด ต้อง
   await contact.goto();
   await contact.btnCreateContact.click()
   await contact.btn_address.click();
-  await page.waitForTimeout(1000)
+  // await page.waitForTimeout(1000)
   await page.getByRole('combobox', { name: 'ค้นหา จังหวัด' }).fill('กรุงเทพมหานคร');
-  await page.waitForTimeout(1000)
+  // await page.waitForTimeout(1000)
   await page.locator('.grid.grid-cols-2 > div:nth-child(4) > #dropdownEl > .relative > .w-8').click()
   await page.getByRole('option', { name: 'คลองต้นไทร » คลองสาน » กรุงเทพมหานคร »' }).click();
   await expect(page.getByRole('combobox', { name: 'กรุงเทพมหานคร' })).toBeVisible()
@@ -844,10 +844,10 @@ test('CRM_CT00069	กรณีค้นหา รหัสไปรษณีย�
   await contact.btnCreateContact.click()
   await contact.btn_address.click();
 
-  await page.waitForTimeout(1000)
+  // await page.waitForTimeout(1000)
 
   await page.getByRole('combobox', { name: 'ค้นหา รหัสไปรษณีย์' }).click();
-  await page.waitForTimeout(1000)
+  // await page.waitForTimeout(1000)
   await page.locator('.grid.grid-cols-2 > div:nth-child(5) > #dropdownEl > .relative > .w-8 > .lucide').click();
   await page.getByRole('combobox', { name: 'ค้นหา รหัสไปรษณีย์' }).click();
   await page.getByRole('combobox', { name: 'ค้นหา รหัสไปรษณีย์' }).fill(contact_Search_Data.Address_zipcode);
@@ -936,7 +936,7 @@ test('CRM_CT00074	"การใส่ข้อมูลช่อง Text Input �
   await contact.btnCreateContact.click()
 
   await contact.inputName.fill('ทดสอบsadsadsddd11')
-  await page.waitForTimeout(500);
+  // await page.waitForTimeout(500);
   expect(await page.getByText('Name *The maximum length')).toBeVisible()
 
 
@@ -1170,7 +1170,7 @@ test('CRM_CT00091	"การสร้างเนื้อหา อัปโห
     'tests/file_update-test/doc-14mb.doc',
 
   ]);
-  await page.waitForTimeout(1000)
+  // await page.waitForTimeout(1000)
   expect(await contact.error_attach_file).toBeVisible()
 
 
@@ -1201,7 +1201,7 @@ test('CRM_CT00093	"การสร้างเนื้อหา อัปโห
   await page.setInputFiles('input[type="file"]', [
     'tests/file_update-test/docx-13mb.docx',
   ]);
-  await page.waitForTimeout(2000)
+  // await page.waitForTimeout(2000)
   expect(await contact.error_attach_file).toBeVisible()
 });
 test('CRM_CT00094	"การสร้างเนื้อหา อัปโหลด Attach File (Type XLS) ""ขนาดไฟล์ไม่เกิน5MB " ', async ({ page }) => {
@@ -1228,7 +1228,7 @@ test('CRM_CT00095	"การสร้างเนื้อหา อัปโห
   await page.setInputFiles('input[type="file"]', [
     'tests/file_update-test/xls-15mb.xls',
   ]);
-  await page.waitForTimeout(2000)
+  // await page.waitForTimeout(2000)
   expect(await contact.error_attach_file).toBeVisible()
 });
 
@@ -1256,7 +1256,7 @@ test('CRM_CT00097	"การสร้างเนื้อหา อัปโห
   await page.setInputFiles('input[type="file"]', [
     'tests/file_update-test/11mb.xlsx',
   ]);
-  await page.waitForTimeout(2000)
+  // await page.waitForTimeout(2000)
   expect(contact.error_attach_file).toBeVisible()
 });
 
@@ -1284,7 +1284,7 @@ test('CRM_CT00099	"การสร้างเนื้อหา อัปโห
   await page.setInputFiles('input[type="file"]', [
     'tests/file_update-test/6mb.csv',
   ]);
-  await page.waitForTimeout(2000)
+  // await page.waitForTimeout(2000)
   expect(contact.error_attach_file).toBeVisible()
 });
 test('CRM_CT00100	"การสร้างเนื้อหา อัปโหลด Attach File (Type PNG) ""ขนาดไฟล์ไม่เกิน5MB"" " " ', async ({ page }) => {
@@ -1311,7 +1311,7 @@ test('CRM_CT00101	"การสร้างเนื้อหา อัปโห
   await page.setInputFiles('input[type="file"]', [
     'tests/file_update-test/12mb.png',
   ]);
-  await page.waitForTimeout(2000)
+  // await page.waitForTimeout(2000)
   expect(contact.error_attach_file).toBeVisible()
 });
 test('CRM_CT00102	"การสร้างเนื้อหา อัปโหลด Attach File (Type JPG) ""ขนาดไฟล์ไม่เกิน5MB"" " ', async ({ page }) => {
@@ -1341,7 +1341,7 @@ test('CRM_CT00103	"การสร้างเนื้อหา อัปโห
   await page.setInputFiles('input[type="file"]', [
     'tests/file_update-test/jpg-15mb.jpg',
   ]);
-  await page.waitForTimeout(2000)
+  // await page.waitForTimeout(2000)
   expect(contact.error_attach_file).toBeVisible()
 });
 
@@ -1369,7 +1369,7 @@ test('CRM_CT00105	"การสร้างเนื้อหา อัปโห
   await page.setInputFiles('input[type="file"]', [
     'tests/file_update-test/jpeg-20mb.jpeg',
   ]);
-  await page.waitForTimeout(2000)
+  // await page.waitForTimeout(2000)
   expect(contact.error_attach_file).toBeVisible()
 });
 test('CRM_CT00106	"การสร้างเนื้อหา ปุ่มกด X Remove File " ', async ({ page }) => {
@@ -1457,23 +1457,23 @@ test('CRM_CT00110 	การสร้างลูกค้า Contact (ปุ่
 
   // กรอก Address
   await contact.btn_address.click();
-  await page.waitForTimeout(500);
+  // await page.waitForTimeout(500);
   await contact.input_address.fill(contactData.Address_no1);
   await contact.addressProvince.click();
   await page.getByRole('combobox', { name: 'ค้นหา จังหวัด' }).fill(contactData.Address_province1);
-  await page.waitForTimeout(1000);
+  // await page.waitForTimeout(1000);
   await page.getByRole('option', { name: contactData.Address_province1 }).first().click();
 
   await contact.uploadFiles(page, filesToUpload);
 
 
   await contact.fillInputMultipleDropdown(multipleDropdownData)
-  await page.waitForTimeout(1000)
+  // await page.waitForTimeout(1000)
   await contact.submmit_contact.click()
 
   await page.getByLabel('Create', { exact: true }).click()
 
-  await page.waitForTimeout(2000)
+  // await page.waitForTimeout(2000)
   await verifyTopTableRow(page, {
     Name: contactData.Name,
 
@@ -1497,7 +1497,8 @@ test('CRM_CT00112	"ติ๊กกล่องเลือกข้อมูล 
 
   const contact = new Element_Create_Contact(page);
   await contact.goto();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
+  await expect(page.locator('#dyn_contactTable')).toBeVisible();
 
   // เลือกแถวที่ 2 (ไม่ใช่แถวแรก)
   const secondRow = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').nth(1);
@@ -1516,7 +1517,7 @@ test('CRM_CT00112	"ติ๊กกล่องเลือกข้อมูล 
   await page.getByRole('button', { name: 'Delete', exact: true }).click();
 
   // รอให้ระบบประมวลผล
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
 
   // ตรวจสอบว่าแถวที่มีชื่อนั้นหายไปแล้ว
   const deletedRow = page.locator('#dyn_contactTable tr').filter({ hasText: nameToDelete || '' });
@@ -1592,7 +1593,7 @@ test('CRM_CT00117	การแก้ไขช่องใส่ Name', async ({ 
   await contact.inputName.fill(contactData.Change_name)
   await contact.btnUpdate.click()
   await contact.btnconfirm_update.click()
-  await page.waitForTimeout(3000)
+  // await page.waitForTimeout(3000)
   await verifyTopTableRow(page, { Name: contactData.Change_name })
 
 })
@@ -1602,7 +1603,8 @@ test('CRM_CT00118	"การแก้ไขช่องใส่ Name กรณ�
 
   // 1. Navigate to contact page
   await contact.goto();
-  await page.waitForLoadState('networkidle');
+  // await page.waitForLoadState('networkidle');
+  await expect(page.locator('#dyn_contactTable')).toBeVisible();
 
   // 2. Get Name from 2nd row (to be used as duplicate source)
   const secondRow = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').nth(1);
@@ -1621,7 +1623,7 @@ test('CRM_CT00118	"การแก้ไขช่องใส่ Name กรณ�
   await contact.input_Field({ Name: secondRowName?.trim() });
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(500)
+  // await page.waitForTimeout(500)
   // 6. Verify error message
   await expect(page.getByText('ไม่สามารถบันทึก Contact ได้ เนื่องจากมีข้อมูลนี้อยู่แล้ว').or(page.getByText('Name already exists'))).toBeVisible();
 });
@@ -1646,7 +1648,7 @@ test('CRM_CT00120	การแก้ไขช่องใส่ Phone', async ({
   await contact.btnUpdate.click()
   await contact.btnconfirm_update.click()
 
-  await page.waitForTimeout(3000)
+  // await page.waitForTimeout(3000)
   await verifyTopTableRow(page, { Phone: contactData.Change_phone })
 
 })
@@ -1665,7 +1667,7 @@ test('CRM_CT00122	"การแก้ไขช่องใส่ Phone กรณ
   await contact.goto();
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name })
   await contact.inputPhone.fill('')
-  await page.waitForTimeout(500)
+  // await page.waitForTimeout(500)
   await expect(contact.error_msg_empty).toBeVisible()
 
 })
@@ -1702,7 +1704,7 @@ test('CRM_CT00124 "การแก้ไขช่องใส่ Email"', async 
   await contact.inputEmail.fill('edit_email@test.com');
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
   await verifyTopTableRow(page, { Email: 'edit_email@test.com' });
 });
 
@@ -1760,7 +1762,7 @@ test('CRM_CT00127 "การแก้ไขข้อมูลช่อง Addres
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
 
   const firstRow = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').first();
@@ -1776,10 +1778,10 @@ test('CRM_CT00128 "การแก้ไขข้อมูล ช่อง Addre
 
   // ค้นหา ตำบล/แขวง
   await contact.addressSubDistrict.click();
-  await page.waitForTimeout(500);
+  // await page.waitForTimeout(500);
 
   await contact.addressSubDistrict.fill(contactData.Address_subdistrict1_Edit);
-  await page.waitForTimeout(500);
+  // await page.waitForTimeout(500);
 
 
   // รอให้ตัวเลือกปรากฏ
@@ -1794,7 +1796,7 @@ test('CRM_CT00128 "การแก้ไขข้อมูล ช่อง Addre
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   // Verify update in table if possible, or just that it saved successfully
   const firstRow = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').first();
@@ -1818,7 +1820,7 @@ test('CRM_CT00129 "การแก้ไขข้อมูล ช่อง Addre
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   const firstRow = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').first();
   const addressCell = firstRow.locator('#dyn_row_address');
@@ -1841,7 +1843,7 @@ test('CRM_CT00130 "การแก้ไขข้อมูล ช่อง Addre
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   const firstRow = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').first();
   const addressCell = firstRow.locator('#dyn_row_address');
@@ -1864,7 +1866,7 @@ test('CRM_CT00131 "การแก้ไขข้อมูล ช่อง Addre
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   const firstRow = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').first();
   const addressCell = firstRow.locator('#dyn_row_address');
@@ -1884,7 +1886,7 @@ test('CRM_CT00132 "การแก้ไขข้อมูล ช่อง Addre
 
   // ตรวจสอบข้อความแจ้งเตือนที่ field
   await expect(contact.error_msg_empty).toBeVisible();
-  await page.waitForTimeout(2000)
+  // await page.waitForTimeout(2000)
   // ตรวจสอบข้อความแจ้งเตือน toast
   await expect(contact.error_msg_toast).toBeVisible();
 });
@@ -1899,7 +1901,7 @@ test('CRM_CT00133 "การแก้ไขเลือกข้อมูลช�
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   // ตรวจสอบข้อมูลในตาราง
   const firstRow = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').first();
@@ -1917,7 +1919,7 @@ test('CRM_CT00134 "การเลือกข้อมูลช่อง Multi 
 
   // เคลียร์ข้อมูลเดิมใน Multi Dropdown Level 1 โดยกด X icon
   await page.locator('.col-span-6 > #dropdownEl > .relative > .absolute.right-6 > .lucide').first().click();
-  await page.waitForTimeout(500);
+  // await page.waitForTimeout(500);
 
   // เลือกข้อมูลใน Multi Dropdown ทั้งหมด Level 1-6
   await contact.fillInputMultipleDropdown({
@@ -1931,7 +1933,7 @@ test('CRM_CT00134 "การเลือกข้อมูลช่อง Multi 
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   // ตรวจสอบข้อมูลในตาราง
   const firstRow = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').first();
@@ -1959,7 +1961,7 @@ test('CRM_CT00135 "การแก้ไขข้อมูลช่อง Text I
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   // Verify by editing again
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
@@ -1992,7 +1994,7 @@ test('CRM_CT00137 "การแก้ไขข้อมูลช่อง Text I
 
   // ตรวจสอบข้อความแจ้งเตือน
   await expect(contact.error_msg_empty).toBeVisible();
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
   await expect(contact.error_msg_toast).toBeVisible();
 });
 
@@ -2006,7 +2008,7 @@ test('CRM_CT00138 "การแก้ไขข้อมูลช่อง Data M
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   // Verify by editing again
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
@@ -2024,7 +2026,7 @@ test('CRM_CT00139 "การติ๊กเลือกRadio Button"', async ({ 
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   // Verify by editing again
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
@@ -2044,7 +2046,7 @@ test('CRM_CT00140 "การติ๊กเลือกCheckbox"', async ({ page
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   // Verify by editing again
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
@@ -2079,7 +2081,7 @@ test('CRM_CT00142 "การแก้ไขข้อมูลวันที่�
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   // Verify by editing again
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
@@ -2097,7 +2099,7 @@ test('CRM_CT00143 "การแก้ไขข้อมูลวันที่ 
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   // Verify by editing again
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
@@ -2115,7 +2117,7 @@ test('CRM_CT00144 "การแก้ไขข้อมูลเวลา Time"'
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   // Verify by editing again
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
@@ -2130,7 +2132,7 @@ test('CRM_CT00145 "ปุ่มกดลิ้งค์ไปหน้าอื�
   await contact.btn_link.click()
   // กดปุ่ม
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
 
   // ตรวจสอบว่า URL เปลี่ยนไป (ลิงก์ไปหน้าอื่น)
   const newUrl = page.url();
@@ -2176,7 +2178,7 @@ test('CRM_CT00150 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/test-pdf.pdf',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
 
   // ตรวจสอบจำนวนไฟล์ที่อัปโหลด
   const items = page.locator('.filepond--item');
@@ -2192,7 +2194,7 @@ test('CRM_CT00150 "การแก้ไขเนื้อหา อัปโห
   // Update และ confirm
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   // เข้ามาตรวจสอบในรายการว่ามีไฟล์ PDF
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
@@ -2215,7 +2217,7 @@ test('CRM_CT00151 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/6mb.pdf',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
 
   // ตรวจสอบข้อความแจ้งเตือน
   expect(contact.error_attach_file).toBeVisible()
@@ -2245,7 +2247,7 @@ test('CRM_CT00152 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/doc-test-edit.doc',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
 
   const items = page.locator('.filepond--item');
   const expectedFiles = ['doc-test-edit.doc'];
@@ -2256,7 +2258,7 @@ test('CRM_CT00152 "การแก้ไขเนื้อหา อัปโห
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
 
@@ -2275,7 +2277,7 @@ test('CRM_CT00153 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/doc-14mb.doc',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
   expect(contact.error_attach_file).toBeVisible();
 
   const uploadedFileName = "doc-14mb.doc";
@@ -2293,7 +2295,7 @@ test('CRM_CT00154 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/docx-test-edit.docx',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
 
   const items = page.locator('.filepond--item');
   const expectedFiles = ['docx-test-edit.docx'];
@@ -2304,7 +2306,7 @@ test('CRM_CT00154 "การแก้ไขเนื้อหา อัปโห
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
 
@@ -2323,7 +2325,7 @@ test('CRM_CT00155 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/docx-13mb.docx',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
   expect(contact.error_attach_file).toBeVisible();
 
   const uploadedFileName = "docx-13mb.docx";
@@ -2341,7 +2343,7 @@ test('CRM_CT00156 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/xls-test.xls',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
 
   const items = page.locator('.filepond--item');
   const expectedFiles = ['xls-test.xls'];
@@ -2352,7 +2354,7 @@ test('CRM_CT00156 "การแก้ไขเนื้อหา อัปโห
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
 
@@ -2371,7 +2373,7 @@ test('CRM_CT00157 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/xls-15mb.xls',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
   expect(contact.error_attach_file).toBeVisible();
 
   const uploadedFileName = "xls-15mb.xls";
@@ -2389,7 +2391,7 @@ test('CRM_CT00158 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/xlsx-test.xlsx',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
 
   const items = page.locator('.filepond--item');
   const expectedFiles = ['xlsx-test.xlsx'];
@@ -2400,7 +2402,7 @@ test('CRM_CT00158 "การแก้ไขเนื้อหา อัปโห
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
 
@@ -2419,7 +2421,7 @@ test('CRM_CT00159 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/11mb.xlsx',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
   expect(contact.error_attach_file).toBeVisible();
 
   const uploadedFileName = "11mb.xlsx";
@@ -2437,7 +2439,7 @@ test('CRM_CT00160 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/csv-test-edit.csv',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
 
   const items = page.locator('.filepond--item');
   const expectedFiles = ['csv-test-edit.csv'];
@@ -2448,7 +2450,7 @@ test('CRM_CT00160 "การแก้ไขเนื้อหา อัปโห
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
 
@@ -2466,7 +2468,7 @@ test('CRM_CT00161 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/6mb.csv',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
   expect(contact.error_attach_file).toBeVisible();
 
   const uploadedFileName = "6mb.csv";
@@ -2484,7 +2486,7 @@ test('CRM_CT00162 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/png.png',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
 
   const items = page.locator('.filepond--item');
   const expectedFiles = ['png.png'];
@@ -2495,7 +2497,7 @@ test('CRM_CT00162 "การแก้ไขเนื้อหา อัปโห
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
 
@@ -2514,7 +2516,7 @@ test('CRM_CT00163 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/png10mb.png',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
   expect(contact.error_attach_file).toBeVisible();
 
   const uploadedFileName = "png10mb.png";
@@ -2532,7 +2534,7 @@ test('CRM_CT00164 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/jpg-test.jpg',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
 
   const items = page.locator('.filepond--item');
   const expectedFiles = ['jpg-test.jpg'];
@@ -2543,7 +2545,7 @@ test('CRM_CT00164 "การแก้ไขเนื้อหา อัปโห
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
 
@@ -2562,7 +2564,7 @@ test('CRM_CT00165 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/jpg-15mb.jpg',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
   expect(contact.error_attach_file).toBeVisible();
 
   const uploadedFileName = "jpg-15mb.jpg";
@@ -2580,7 +2582,7 @@ test('CRM_CT00166 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/small.jpeg',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
 
   const items = page.locator('.filepond--item');
   const expectedFiles = ['small.jpeg'];
@@ -2591,7 +2593,7 @@ test('CRM_CT00166 "การแก้ไขเนื้อหา อัปโห
 
   await contact.btnUpdate.click();
   await contact.btnconfirm_update.click();
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
 
@@ -2610,7 +2612,7 @@ test('CRM_CT00167 "การแก้ไขเนื้อหา อัปโห
     'tests/file_update-test/jpeg-20mb.jpeg',
   ]);
 
-  await page.waitForTimeout(2000);
+  // await page.waitForTimeout(2000);
   expect(contact.error_attach_file).toBeVisible();
 
   const uploadedFileName = "jpeg-20mb.jpeg";
@@ -2624,57 +2626,50 @@ test('CRM_CT00168 "การแก้ไขเนื้อหา ปุ่มก
   await contact.goto();
   await verifyTopTableRow(page, { CheckEdit: contactData.Change_name });
 
-  await page.waitForTimeout(5000);
+  // Ensure we have at least one file to delete, or upload one if needed
+  const items = page.locator('.filepond--item');
+  // Wait for potential existing files to load
+  await expect(async () => {
+    const count = await items.count();
+    if (count === 0) {
+      // If no files, upload one to ensure we have something to delete
+      await page.setInputFiles('input[type="file"]', ['tests/file_update-test/csv-test.csv']);
+    }
+    expect(await items.count()).toBeGreaterThan(0);
+  }).toPass();
 
-  // 1. นับจำนวนไฟล์ทั้งหมดก่อนลบ
-  const itemsBefore = page.locator('.filepond--item');
-  const initialCount = await itemsBefore.count();
-
-  // ดึงชื่อไฟล์ทั้งหมดเพื่อ log (อาจมีชื่อซ้ำ)
+  // 1. Get initial state
+  const initialCount = await items.count();
   const fileNamesBefore = await page.locator('.filepond--file-info-main').allTextContents();
-  console.log(`Files before remove (${initialCount} files):`, fileNamesBefore);
+  const fileToRemove = fileNamesBefore[0]; // Remove the first one
 
-  // ตรวจสอบว่ามีไฟล์อย่างน้อย 1 ไฟล์
-  expect(initialCount).toBeGreaterThan(0);
+  console.log(`Removing file: ${fileToRemove}`);
 
-  // 2. เลือกไฟล์ที่จะลบ (ลบไฟล์แรก - index 0)
-  const indexToRemove = 0;
-  const fileToRemove = fileNamesBefore[indexToRemove];
-  console.log(`Removing file at index ${indexToRemove}: ${fileToRemove}`);
+  // 2. Remove the first file
+  await page.locator('.filepond--action-remove-item').first().click();
 
-  await page.waitForTimeout(3000);
-  // 3. กดปุ่ม Remove ของไฟล์แรก (ใช้ class selector ของ FilePond)
-  const removeButtons = page.locator('.filepond--action-remove-item');
-  await removeButtons.nth(indexToRemove).click();
-
-  // 4. ยืนยันการลบ (Popup Confirm)
+  // 3. Confirm removal
   const popup_remove = page.getByLabel('Remove', { exact: true });
   await expect(popup_remove).toBeVisible();
   await popup_remove.click();
 
-  // รอให้รายการอัปเดต
-  await page.waitForTimeout(2000);
+  // 4. Verify removal
+  // Wait for count to decrease
+  await expect(items).toHaveCount(initialCount - 1);
 
-  // 5. นับจำนวนไฟล์หลังลบ
-  const itemsAfter = page.locator('.filepond--item');
-  const finalCount = await itemsAfter.count();
+  // Verify the name is gone (or count decreased if duplicates existed)
+  const countOfTargetFileBefore = fileNamesBefore.filter(name => name === fileToRemove).length;
 
+  // Re-fetch file names after removal
   const fileNamesAfter = await page.locator('.filepond--file-info-main').allTextContents();
-  console.log(`Files after remove (${finalCount} files):`, fileNamesAfter);
 
-  // 6. ✅ ตรวจสอบจำนวนไฟล์ (ต้องลดลง 1) - รองรับกรณีชื่อซ้ำ
-  expect(finalCount).toBe(initialCount - 1);
-
-  // 7. ถ้าชื่อไฟล์ไม่ซ้ำ ให้เช็คว่าไฟล์ที่ลบหายไปจริง
-  const hasDuplicateNames = fileNamesBefore.length !== new Set(fileNamesBefore).size;
-
-  if (!hasDuplicateNames) {
-    // ไม่มีชื่อซ้ำ - เช็คว่าไฟล์ที่ลบหายไป
+  if (countOfTargetFileBefore === 1) {
+    // If it was unique, it should be completely gone
     expect(fileNamesAfter).not.toContain(fileToRemove);
-    console.log(`✅ File "${fileToRemove}" was successfully removed`);
   } else {
-    // มีชื่อซ้ำ - เช็คเฉพาะจำนวนที่ลดลง
-    console.log(`⚠️ `);
+    // If there were duplicates, ensure the count of that specific name decreased by 1
+    const countOfTargetFileAfter = fileNamesAfter.filter(name => name === fileToRemove).length;
+    expect(countOfTargetFileAfter).toBe(countOfTargetFileBefore - 1);
   }
 });
 
@@ -2736,7 +2731,7 @@ test('CRM_CT00172 "การแก้ไขข้อมูลลูกค้า 
 
   // เคลียร์ข้อมูลเดิมใน Multi Dropdown Level 1 โดยกด X icon
   await page.locator('.col-span-6 > #dropdownEl > .relative > .absolute.right-6 > .lucide').first().click();
-  await page.waitForTimeout(500);
+  // await page.waitForTimeout(500);
   await contact.fillInputMultipleDropdown(multipleDropdownData_Edt);
 
   // Update Address if needed (input_Field handles it)
@@ -2752,7 +2747,7 @@ test('CRM_CT00172 "การแก้ไขข้อมูลลูกค้า 
   await expect(page.getByText('Update Contact Success').or(page.getByText('Update successful'))).toBeVisible();
 
   // Wait for reload
-  await page.waitForTimeout(3000);
+  // await page.waitForTimeout(3000);
 
   // Verify Data in Table (Top Row)
   await verifyTopTableRow(page, {
@@ -2836,16 +2831,36 @@ test('CRM_CT00173	การลบข้อมูลลูกค้า (Delete Co
   // Verify confirmation dialog
   // "ระบบมีข้อความให้ยืนยันการลบ Delete Contactได้ถูกต้อง"
   await expect(page.getByText('Delete Contact?')).toBeVisible();
-  await page.waitForTimeout(2000);
+
+  // Handle potential confirmation input (Name or "DELETE")
+  // Some delete modals require typing the name to confirm
+  const confirmInput = page.locator('div[role="dialog"] input[type="text"]');
+  if (await confirmInput.isVisible()) {
+    console.log('Found confirmation input, attempting to fill...');
+    await confirmInput.fill(targetName);
+  }
+
+  // Handle potential confirmation checkbox
+  const confirmCheckbox = page.locator('div[role="dialog"] input[type="checkbox"]');
+  if (await confirmCheckbox.isVisible()) {
+    console.log('Found confirmation checkbox, checking...');
+    await confirmCheckbox.check();
+  }
+  // await page.pause();
+  // Wait for button to be enabled
+  // const deleteBtn = page.locator('#dyn_delete_contact');
+  // Use the class from the PrimeReact ConfirmDialog accept button
+  const deleteBtn = page.locator('.p-confirmdialog-accept-button');
+  await expect(deleteBtn).toBeEnabled({ timeout: 5000 });
+
   // Confirm Delete
-  await page.locator('#dyn_delete_contact').click();
+  await deleteBtn.click();
 
   // Verify Success Toast
   // "ระบบแสดงแจ้งเตือน ""Delete Success"""
   await expect(page.getByText('Delete Success').or(page.getByText('Delete successful'))).toBeVisible();
 
   // Verify row is gone
-  await page.waitForTimeout(2000); // Wait for list refresh
+  // await page.waitForTimeout(2000); // Wait for list refresh
   await expect(page.locator('#dyn_contactTable tr').filter({ hasText: targetName })).toHaveCount(0);
 });
-

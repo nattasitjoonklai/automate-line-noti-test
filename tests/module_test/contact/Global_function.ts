@@ -156,7 +156,8 @@ export class ContactAPI {
     // 2) เปิดหน้า
     await page.goto("/contact");
     // 2.1) wait for load
-    await page.waitForLoadState("networkidle");
+    // 2.1) wait for load
+    await expect(page.locator('#dyn_contactTable')).toBeVisible();
     // 3) เปิด filter
     await page.getByRole("button", { name: "Search" }).nth(2).click();
 
@@ -164,20 +165,19 @@ export class ContactAPI {
     await FillInputContactForm(page, form);
 
     // 5) clear date
+    // 5) clear date
     await page.getByRole("combobox", { name: "Select Start Datetime" }).click();
-    await page.waitForTimeout(2000);
     await page.getByLabel("Clear").click();
-    await page.waitForTimeout(5000);
     await page.getByRole("combobox", { name: "Select End Datetime" }).click();
-    await page.waitForTimeout(2000);
     await page.getByLabel("Clear").click();
-    await page.waitForTimeout(2000);
     // 6) Search
     await page.getByRole('button', { name: 'Search' }).nth(1).click();
-    await page.waitForLoadState('networkidle');
+    await page.getByRole('button', { name: 'Search' }).nth(1).click();
+    // await page.waitForLoadState('networkidle');
 
     // Wait for table to render (prevent false positive when expecting 0 rows but data is loading)
-    await page.waitForTimeout(2000);
+    // Wait for table to render (prevent false positive when expecting 0 rows but data is loading)
+    // await page.waitForTimeout(2000);
 
     // 1) ดึง rows จาก table
     const rows = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]');
@@ -297,28 +297,31 @@ export async function verifyTopTableRow(page, expected: { Name?: string, Phone?:
     await expect(page.locator('#dyn_contactTable tr').filter({ hasText: expected.CheckDelete })).toHaveCount(0);
   }
   if (expected.Name) {
-    const nameCell = await firstRow.locator('td').nth(1).textContent();
-    console.log('แถวบนสุด Name:', nameCell?.trim());
-    await expect(nameCell?.trim()).toBe(expected.Name);
+    const nameCell = firstRow.locator('td').nth(1);
+    // console.log('แถวบนสุด Name:', await nameCell.textContent());
+    await expect(nameCell).toHaveText(expected.Name);
   }
 
   if (expected.Phone) {
-    const rows = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]');
+    // If checking phone, we might need to find the specific row if Name is also provided?
+    // The original logic filtered by Name first.
+    let targetRow = firstRow;
+    if (expected.Name) {
+      const rows = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]');
+      targetRow = rows.filter({
+        has: page.locator('td').nth(1).filter({ hasText: expected.Name })
+      }).first();
+    }
 
-    const matchedRow = rows.filter({
-      has: page.locator('td').nth(1).filter({ hasText: expected.Name })
-    });
-    const phoneCell = await matchedRow.locator('td').nth(9).textContent();
-
-    console.log('แถวบนสุด Phone:', phoneCell?.trim());
-
-    await expect(phoneCell?.trim()).toBe(expected.Phone);
+    const phoneCell = targetRow.locator('td').nth(9);
+    // console.log('แถวบนสุด Phone:', await phoneCell.textContent());
+    await expect(phoneCell).toHaveText(expected.Phone);
   }
 
   if (expected.Email) {
-    const emailCell = await firstRow.locator('#dyn_row_email').textContent();
-    console.log('แถวบนสุด Email:', emailCell?.trim());
-    await expect(emailCell?.trim()).toBe(expected.Email);
+    const emailCell = firstRow.locator('#dyn_row_email');
+    // console.log('แถวบนสุด Email:', await emailCell.textContent());
+    await expect(emailCell).toHaveText(expected.Email);
   }
 }
 

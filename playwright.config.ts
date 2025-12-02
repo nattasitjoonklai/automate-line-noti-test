@@ -10,8 +10,12 @@ export default defineConfig({
   testDir: "./tests",
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 2 : 1,
   workers: 1,
+  timeout: 60 * 1000,
+  expect: {
+    timeout: 10 * 1000,
+  },
   reporter: "html",
 
   use: {
@@ -47,6 +51,20 @@ export default defineConfig({
         storageState: "playwright/.template/kbj_full.json",
       },
       testMatch: '**/*contact*.spec.ts',
+      fullyParallel: true,
+    },
+
+    // ----------------------------
+    // Test Agent Desktop Flow
+    // ----------------------------
+    {
+      name: "agentdesktop",
+      use: {
+        ...devices["Desktop Chrome"],
+        headless: false,
+        storageState: "playwright/.template/kbj_full.json",
+      },
+      testMatch: ['**/agentdesktop/*.spec.ts', '**/agent-desktop/*.spec.ts'],
       fullyParallel: true,
     },
   ],
