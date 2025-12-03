@@ -28,8 +28,15 @@ const server = http.createServer((req, res) => {
                     const userId = event.source.userId;
 
                     if (userMessage.includes('run test') || userMessage.includes('test')) {
-                        console.log(`Received command from ${userId}. Triggering GitHub Action...`);
-                        triggerGitHubAction(userId);
+                        let project = '';
+                        if (userMessage.includes('contact')) {
+                            project = 'contact';
+                        } else if (userMessage.includes('agent')) {
+                            project = 'agentdesktop';
+                        }
+
+                        console.log(`Received command from ${userId}. Project: ${project || 'ALL'}. Triggering GitHub Action...`);
+                        triggerGitHubAction(userId, project);
                         res.writeHead(200);
                         res.end('OK');
                     } else {
@@ -53,11 +60,12 @@ const server = http.createServer((req, res) => {
     }
 });
 
-function triggerGitHubAction(userId) {
+function triggerGitHubAction(userId, project) {
     const data = JSON.stringify({
         ref: 'main', // or 'master'
         inputs: {
-            userId: userId
+            userId: userId,
+            project: project || ''
         }
     });
 

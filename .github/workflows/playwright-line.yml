@@ -6,6 +6,10 @@ on:
       userId:
         description: 'LINE User ID to send results to'
         required: true
+      project:
+        description: 'Playwright Project to run (contact or agentdesktop)'
+        required: false
+        default: ''
 
 jobs:
   test:
@@ -26,7 +30,12 @@ jobs:
       run: npx playwright install --with-deps
       
     - name: Run Playwright tests
-      run: npx playwright test
+      run: |
+        if [ -n "${{ inputs.project }}" ]; then
+          npx playwright test --project=${{ inputs.project }}
+        else
+          npx playwright test
+        fi
       continue-on-error: true
       env:
         # Add any other environment variables your tests need here
