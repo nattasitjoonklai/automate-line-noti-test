@@ -71,6 +71,116 @@ try {
     const skipped = report.stats.skipped;
     const duration = (report.stats.duration / 1000).toFixed(2);
 
+    // Extract failed tests
+    const failedTests = [];
+    function traverse(suite) {
+        if (suite.tests) {
+            suite.tests.forEach(test => {
+                if (test.results && test.results.some(r => r.status === 'unexpected')) {
+                    failedTests.push(test.title);
+                }
+            });
+        }
+        if (suite.suites) {
+            suite.suites.forEach(child => traverse(child));
+        }
+    }
+    if (report.suites) {
+        report.suites.forEach(suite => traverse(suite));
+    }
+
+    // Limit displayed failures
+    const maxFailuresToShow = 10;
+    const displayedFailures = failedTests.slice(0, maxFailuresToShow);
+    const remainingFailures = failedTests.length - maxFailuresToShow;
+
+    // Construct message body contents
+    const bodyContents = [
+        {
+            type: 'box',
+            layout: 'horizontal',
+            contents: [
+                { type: 'text', text: 'Total', size: 'sm', color: '#555555', flex: 1 },
+                { type: 'text', text: `${total}`, size: 'sm', color: '#111111', align: 'end' }
+            ]
+        },
+        {
+            type: 'box',
+            layout: 'horizontal',
+            contents: [
+                { type: 'text', text: 'Passed', size: 'sm', color: '#555555', flex: 1 },
+                { type: 'text', text: `${passed}`, size: 'sm', color: '#00c853', align: 'end' }
+            ]
+        },
+        {
+            type: 'box',
+            layout: 'horizontal',
+            contents: [
+                { type: 'text', text: 'Failed', size: 'sm', color: '#555555', flex: 1 },
+                { type: 'text', text: `${failed}`, size: 'sm', color: '#ff4b4b', align: 'end' }
+            ]
+        },
+        {
+            type: 'box',
+            layout: 'horizontal',
+            contents: [
+                { type: 'text', text: 'Skipped', size: 'sm', color: '#555555', flex: 1 },
+                { type: 'text', text: `${skipped}`, size: 'sm', color: '#aaaaaa', align: 'end' }
+            ]
+        },
+        {
+            type: 'separator',
+            margin: 'md'
+        },
+        {
+            type: 'box',
+            layout: 'horizontal',
+            margin: 'md',
+            contents: [
+                { type: 'text', text: 'Duration', size: 'xs', color: '#aaaaaa', flex: 1 },
+                { type: 'text', text: `${duration}s`, size: 'xs', color: '#aaaaaa', align: 'end' }
+            ]
+        }
+    ];
+
+    // Append Failed Tests List if any
+    if (displayedFailures.length > 0) {
+        bodyContents.push({
+            type: 'separator',
+            margin: 'md'
+        });
+        bodyContents.push({
+            type: 'text',
+            text: 'Failed Cases:',
+            weight: 'bold',
+            size: 'sm',
+            margin: 'md',
+            color: '#ff4b4b'
+        });
+
+        displayedFailures.forEach(title => {
+            bodyContents.push({
+                type: 'text',
+                text: `❌ ${title}`,
+                size: 'xs',
+                color: '#555555',
+                wrap: true,
+                margin: 'xs'
+            });
+        });
+
+        if (remainingFailures > 0) {
+            bodyContents.push({
+                type: 'text',
+                text: `...and ${remainingFailures} more`,
+                size: 'xs',
+                color: '#aaaaaa',
+                margin: 'xs',
+                style: 'italic'
+            });
+        }
+    }
+
     // Construct message
     const message = {
         to: userId,
@@ -97,53 +207,7 @@ try {
                     body: {
                         type: 'box',
                         layout: 'vertical',
-                        contents: [
-                            {
-                                type: 'box',
-                                layout: 'horizontal',
-                                contents: [
-                                    { type: 'text', text: 'Total', size: 'sm', color: '#555555', flex: 1 },
-                                    { type: 'text', text: `${total}`, size: 'sm', color: '#111111', align: 'end' }
-                                ]
-                            },
-                            {
-                                type: 'box',
-                                layout: 'horizontal',
-                                contents: [
-                                    { type: 'text', text: 'Passed', size: 'sm', color: '#555555', flex: 1 },
-                                    { type: 'text', text: `${passed}`, size: 'sm', color: '#00c853', align: 'end' }
-                                ]
-                            },
-                            {
-                                type: 'box',
-                                layout: 'horizontal',
-                                contents: [
-                                    { type: 'text', text: 'Failed', size: 'sm', color: '#555555', flex: 1 },
-                                    { type: 'text', text: `${failed}`, size: 'sm', color: '#ff4b4b', align: 'end' }
-                                ]
-                            },
-                            {
-                                type: 'box',
-                                layout: 'horizontal',
-                                contents: [
-                                    { type: 'text', text: 'Skipped', size: 'sm', color: '#555555', flex: 1 },
-                                    { type: 'text', text: `${skipped}`, size: 'sm', color: '#aaaaaa', align: 'end' }
-                                ]
-                            },
-                            {
-                                type: 'separator',
-                                margin: 'md'
-                            },
-                            {
-                                type: 'box',
-                                layout: 'horizontal',
-                                margin: 'md',
-                                contents: [
-                                    { type: 'text', text: 'Duration', size: 'xs', color: '#aaaaaa', flex: 1 },
-                                    { type: 'text', text: `${duration}s`, size: 'xs', color: '#aaaaaa', align: 'end' }
-                                ]
-                            }
-                        ]
+                        contents: bodyContents
                     }
                 }
             }

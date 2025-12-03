@@ -162,7 +162,7 @@ test.beforeEach(async ({ page }) => {
 test.describe('Contact Search Tests', () => {
   test.describe.configure({ mode: 'parallel' });
 
-  test('CRM_CT00001 การเข้าหน้า Contact', async ({ page }) => {
+  test('CRM_CT00001 การเข้าหน้า Contact @smoke', async ({ page }) => {
     const contact = new Element_Contact(page);
     await page.goto(BaseUrl + '/contact');
 
@@ -295,7 +295,7 @@ test.describe('Contact Search Tests', () => {
     await page.getByRole('button', { name: 'Search' }).nth(1).click()
     await expect(page.getByRole('cell', { name: 'No Data' })).toBeVisible();
   });
-  test('CRM_CT00007   "การค้นหาช่องใส่ Phone กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
+  test('CRM_CT00007   "การค้นหาช่องใส่ Phone กรณีมีรายชื่อลูกค้าอยู่ในระบบ" @smoke', async ({ page, request }) => {
     await ContactAPI.searchAndVerify(page, request, { Phone: contact_Search_Data.Phone });
 
   });
@@ -1452,7 +1452,7 @@ test('CRM_CT00109\tยกเลิกการสร้าง (ปุ่มCance
 });
 
 
-test('CRM_CT00110 	การสร้างลูกค้า Contact (ปุ่มCreate) ', async ({ page }) => {
+test('CRM_CT00110 	การสร้างลูกค้า Contact (ปุ่มCreate) @smoke', async ({ page }) => {
 
   const contact = new Element_Create_Contact(page);
   await contact.goto();
@@ -1498,7 +1498,7 @@ test('CRM_CT00111	การส่งออกข้อมูลลูกค้�
   expect(suggestedFilename).toBe('contact.xlsx')
 })
 
-test('CRM_CT00112	"ติ๊กกล่องเลือกข้อมูล Contact สำหรับลบรายชื่อลูกค้า (ปุ่มDelete Contact)"', async ({ page }) => {
+test('CRM_CT00112	"ติ๊กกล่องเลือกข้อมูล Contact สำหรับลบรายชื่อลูกค้า (ปุ่มDelete Contact)" @smoke', async ({ page }) => {
 
   const contact = new Element_Create_Contact(page);
   await contact.goto();
@@ -1537,7 +1537,7 @@ test('CRM_CT00112	"ติ๊กกล่องเลือกข้อมูล 
 //   // TODO: Implement test for Template download
 // });
 
-test('CRM_CT00115	การเข้าชมข้อมูลลูกค้า (View Contact) ========== ', async ({ page }) => {
+test('CRM_CT00115	การเข้าชมข้อมูลลูกค้า (View Contact) ========== @smoke', async ({ page }) => {
 
   const contact = new Element_Create_Contact(page);
   await contact.goto();
@@ -1590,7 +1590,7 @@ test('CRM_CT00116	การแก้ไขข้อมูลลูกค้า (
   await expect(contact.input_segment).toBeVisible();
 })
 
-test('CRM_CT00117	การแก้ไขช่องใส่ Name', async ({ page }) => {
+test('CRM_CT00117	การแก้ไขช่องใส่ Name @smoke', async ({ page }) => {
 
   const contact = new Element_Create_Contact(page);
   await contact.goto();
