@@ -10,6 +10,10 @@ on:
         description: 'Playwright Project to run (contact or agentdesktop)'
         required: false
         default: ''
+      grep:
+        description: 'Grep pattern to filter tests (e.g., CRM_AG00001)'
+        required: false
+        default: ''
 
 jobs:
   test:
@@ -31,11 +35,18 @@ jobs:
       
     - name: Run Playwright tests
       run: |
+        CMD="npx playwright test"
+        
         if [ -n "${{ inputs.project }}" ]; then
-          npx playwright test --project=${{ inputs.project }}
-        else
-          npx playwright test
+          CMD="$CMD --project=${{ inputs.project }}"
         fi
+        
+        if [ -n "${{ inputs.grep }}" ]; then
+          CMD="$CMD -g \"${{ inputs.grep }}\""
+        fi
+        
+        echo "Running command: $CMD"
+        eval $CMD
       continue-on-error: true
       env:
         # Add any other environment variables your tests need here

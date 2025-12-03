@@ -29,14 +29,23 @@ const server = http.createServer((req, res) => {
 
                     if (userMessage.includes('run test') || userMessage.includes('test')) {
                         let project = '';
+                        let grep = '';
+
+                        // Check for project
                         if (userMessage.includes('contact')) {
                             project = 'contact';
                         } else if (userMessage.includes('agent')) {
                             project = 'agentdesktop';
                         }
 
-                        console.log(`Received command from ${userId}. Project: ${project || 'ALL'}. Triggering GitHub Action...`);
-                        triggerGitHubAction(userId, project);
+                        // Check for specific test case (e.g., CRM_AG00001)
+                        const match = userMessage.match(/(crm_[a-z0-9]+)/i);
+                        if (match) {
+                            grep = match[1].toUpperCase();
+                        }
+
+                        console.log(`Received command from ${userId}. Project: ${project || 'ALL'}, Grep: ${grep || 'NONE'}. Triggering GitHub Action...`);
+                        triggerGitHubAction(userId, project, grep);
                         res.writeHead(200);
                         res.end('OK');
                     } else {
@@ -60,12 +69,13 @@ const server = http.createServer((req, res) => {
     }
 });
 
-function triggerGitHubAction(userId, project) {
+function triggerGitHubAction(userId, project, grep) {
     const data = JSON.stringify({
         ref: 'main', // or 'master'
         inputs: {
             userId: userId,
-            project: project || ''
+            project: project || '',
+            grep: grep || ''
         }
     });
 
