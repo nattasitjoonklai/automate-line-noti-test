@@ -23,7 +23,7 @@ export default defineConfig({
     baseURL: process.env.CRM_BASE_URL,
     launchOptions: { args: ["--start-maximized"] },
     trace: "on",
-    headless: false,
+    headless: !!process.env.CI, // Run headless in CI, headed locally
   },
 
   projects: [
@@ -47,7 +47,7 @@ export default defineConfig({
       name: "contact",
       use: {
         ...devices["Desktop Chrome"],
-        headless: false,
+        // headless: false, // Use global setting
         storageState: "playwright/.template/kbj_full.json",
       },
       testMatch: '**/*contact*.spec.ts',
@@ -62,7 +62,7 @@ export default defineConfig({
       testDir: "./tests/module_test/agentdesktop",
       use: {
         ...devices["Desktop Chrome"],
-        headless: false,
+        // headless: false, // Use global setting
         storageState: "playwright/.template/kbj_full.json",
       },
       testMatch: '*.spec.ts',
