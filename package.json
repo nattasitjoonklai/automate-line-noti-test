@@ -2,9 +2,9 @@
   "name": "playwrite",
   "version": "1.0.0",
   "description": "",
-  "main": "scripts/line-webhook-server.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node scripts/line-webhook-server.js"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
