@@ -36,12 +36,36 @@ export async function verifyAgentDesktopElements(page: Page) {
  * Verify Agent Status options are available
  */
 export async function verifyAgentStatusOptions(page: Page) {
-    // TODO: Need to find the correct selector for agent status button
-    // For now, we'll skip this verification
-    console.log('⚠️  Agent Status verification skipped - need correct selector');
+    await page.waitForTimeout(5000);
+    // คลิกปุ่ม dropdown เพื่อแสดงตัวเลือกสถานะ
+    await page.locator('span').nth(4).click();
 
-    // Just wait a bit to ensure page is loaded
-    await page.waitForTimeout(1000);
+    // รอให้ dropdown แสดงขึ้นมา
+    await page.waitForTimeout(500);
+
+    // หา dropdown overlay (มักจะมี id ขึ้นต้นด้วย pv_id)
+    const dropdown = page.locator('[id^="pv_id_"]').filter({ hasText: 'Available' }).first();
+
+    // เช็คว่าตัวเลือกสถานะทั้งหมดแสดงขึ้นมาใน dropdown
+    const expectedStatuses = [
+        'Available',
+        'login',
+        'Toilet',
+        'Coach/Tranining',
+        'Outbound'
+    ];
+
+    for (const status of expectedStatuses) {
+        // เลือกเฉพาะตัวที่อยู่ใน dropdown overlay
+        const statusOption = page.locator('[id^="pv_id_"]').getByText(status, { exact: true }).first();
+        await expect(statusOption).toBeVisible({ timeout: 5000 });
+        console.log(`✅ Status option "${status}" is visible`);
+    }
+
+    // ปิด dropdown โดยกด Escape หรือคลิกที่อื่น
+    await page.keyboard.press('Escape');
+
+    console.log('✅ All agent status options verified successfully');
 }
 
 /**
@@ -58,6 +82,7 @@ export async function verifyChannelTabs(page: Page) {
         { id: 'tab_instagram', label: 'instagram' },
         { id: 'tab_telegram', label: 'telegram' },
         { id: 'tab_lazada', label: 'lazada' }
+
     ];
 
     for (const channel of expectedChannels) {
@@ -87,8 +112,25 @@ export async function verifyTaskTypeMenu(page: Page) {
 
 /**
  * Verify Ticket Detail Tabs (when a ticket is selected)
+ * คลิกเลือก task แรกในรายการ แล้วเช็คว่ามีแท็บต่างๆ แสดงขึ้นมา
  */
 export async function verifyTicketDetailTabs(page: Page) {
+    // คลิกเลือก task แรกในรายการ (task container มี id ที่ขึ้นต้นด้วย hex)
+    // หา task แรกใน mytask-wrapper
+    const firstTask = page.locator('#mytask-wrapper > div > div').first();
+
+    // เช็คว่า task มีอยู่จริง
+    await expect(firstTask).toBeVisible({ timeout: 5000 });
+    console.log('✅ First task found in list');
+
+    // คลิกที่ task แรก
+    await firstTask.click();
+    console.log('✅ Clicked first task');
+
+    // รอให้แท็บโหลดขึ้นมา
+    await page.waitForTimeout(1000);
+
+    // รายการแท็บที่ต้องเช็ค
     const expectedTabs = [
         'Contact',
         'Ticket',
@@ -99,15 +141,17 @@ export async function verifyTicketDetailTabs(page: Page) {
         'Ticket History'
     ];
 
-    // Note: These tabs may only be visible when a ticket is selected
-    // This function should be called after selecting a ticket
+    // เช็คว่าแท็บทั้งหมดแสดงขึ้นมา
     for (const tabName of expectedTabs) {
-        const tab = page.locator(`button:has-text("${tabName}")`).or(
+        const tab = page.locator(`button[role="tab"]`).filter({ hasText: tabName }).or(
             page.locator(`[aria-label="${tabName}"]`)
-        );
-        // Use a shorter timeout as these might not always be visible
+        ).first();
+
         await expect(tab).toBeVisible({ timeout: 5000 });
+        console.log(`✅ Tab "${tabName}" is visible`);
     }
+
+    console.log('✅ All ticket detail tabs verified successfully');
 }
 
 /**
@@ -121,7 +165,7 @@ export async function verifySearchOptions(page: Page) {
     await searchSelect.click();
 
     // Verify search options
-    const expectedOptions = ['Name', 'Phone', 'Ticket no.'];
+    const expectedOptions = ['Name', 'Phone', 'Ticket No.'];
     for (const option of expectedOptions) {
         await expect(page.getByText(option, { exact: true })).toBeVisible();
     }
@@ -157,4 +201,54 @@ export async function waitForTaskListLoad(page: Page) {
     if (await loadingIndicator.isVisible({ timeout: 2000 }).catch(() => false)) {
         await expect(loadingIndicator).not.toBeVisible({ timeout: 10000 });
     }
+}
+
+/**
+ * Verify Notification and Reminder tabs
+ * เช็คว่าเมื่อกดไอคอนกระดิ่งแล้ว popup จะแสดงขึ้นพร้อมกับแท็บ 2 แท็บ (Notification และ Reminder)
+ */
+export async function verifyNotificationTabs(page: Page) {
+    // หาและคลิกปุ่มกระดิ่ง (notification bell icon)
+    // ใช้ XPath เพื่อหา element ที่แน่นอน (คลิกที่ span parent ของ svg)
+    const notificationButton = page.locator('xpath=//*[@id="app"]/div[2]/div/div[2]/div/div[3]/span[1]');
+
+    await notificationButton.click();
+    console.log('✅ Clicked notification bell icon');
+
+    // รอให้ popup แสดงขึ้นมา
+    await page.waitForTimeout(500);
+
+    // เช็คว่า popup dialog แสดงขึ้นมา
+    const popover = page.locator('[role="dialog"][data-pc-name="popover"]');
+    await expect(popover).toBeVisible({ timeout: 5000 });
+    console.log('✅ Notification popover is visible');
+
+    // เช็คว่ามีแท็บ Notification
+    const notificationTab = page.locator('button[role="tab"]').filter({ hasText: 'Notification' });
+    await expect(notificationTab).toBeVisible({ timeout: 5000 });
+    console.log('✅ Notification tab is visible');
+
+    // เช็คว่ามีแท็บ Reminder
+    const reminderTab = page.locator('button[role="tab"]').filter({ hasText: 'Reminder' });
+    await expect(reminderTab).toBeVisible({ timeout: 5000 });
+    console.log('✅ Reminder tab is visible');
+
+    // ทดสอบคลิกแท็บ Reminder
+    await reminderTab.click();
+    await page.waitForTimeout(300);
+    console.log('✅ Clicked Reminder tab');
+
+    // เช็คว่าแท็บ Reminder active
+    await expect(reminderTab).toHaveAttribute('aria-selected', 'true');
+    console.log('✅ Reminder tab is now active');
+
+    // คลิกกลับไปที่แท็บ Notification
+    await notificationTab.click();
+    await page.waitForTimeout(300);
+    console.log('✅ Clicked back to Notification tab');
+
+    // ปิด popup โดยกด Escape หรือคลิกที่อื่น
+    await page.keyboard.press('Escape');
+
+    console.log('✅ All notification tabs verified successfully');
 }

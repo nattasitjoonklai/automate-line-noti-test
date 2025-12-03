@@ -16,7 +16,7 @@ export default defineConfig({
   expect: {
     timeout: 10 * 1000,
   },
-  reporter: "html",
+  reporter: [['html'], ['json', { outputFile: 'playwright-report/results.json' }]],
 
   use: {
     video: "on",
@@ -59,12 +59,13 @@ export default defineConfig({
     // ----------------------------
     {
       name: "agentdesktop",
+      testDir: "./tests/module_test/agentdesktop",
       use: {
         ...devices["Desktop Chrome"],
         headless: false,
         storageState: "playwright/.template/kbj_full.json",
       },
-      testMatch: ['**/agentdesktop/*.spec.ts', '**/agent-desktop/*.spec.ts'],
+      testMatch: '*.spec.ts',
       fullyParallel: true,
     },
   ],

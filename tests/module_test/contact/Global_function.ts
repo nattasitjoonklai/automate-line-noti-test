@@ -33,9 +33,22 @@ export type SearchParams = {
 };
 let json_data: any = {};
 export class ContactAPI {
-  static token = "ZbWxQ-E2ha5-UBFpOj9PMBwtQiqEuyOW92F8UChgxaqEcG0M0xRrtZw-qN7hUOVigitD7puMTzHwjYXO2jCxGAh1-5jLrTrj-GqWn2B8btBM9D5A";
+  // ดึง token จาก localStorage
+  static async getToken(page: Page): Promise<string> {
+    const token = await page.evaluate(() => {
+      return localStorage.getItem('access_token');
+    });
 
-  static async fetchContacts(request: APIRequestContext, params: SearchParams) {
+    if (!token) {
+      throw new Error('Access token not found in localStorage');
+    }
+
+    return token;
+  }
+
+  static async fetchContacts(page: Page, request: APIRequestContext, params: SearchParams) {
+    // ดึง token จาก localStorage
+    const token = await this.getToken(page);
     const apiParams: Record<string, string> = {
       organize_id: params.organize_id,
       template_id: params.template_id,
@@ -75,7 +88,7 @@ export class ContactAPI {
       `https://api-dev.cloudcentric.app/api/contacts/filter?${query}`,
       {
         headers: {
-          authorization: `Bearer ${ContactAPI.token}`,
+          authorization: `Bearer ${token}`,
           "login-provider": "zitadel",
           "Content-Type": "application/json",
         },
@@ -125,7 +138,7 @@ export class ContactAPI {
   // 🔥 รวมทุกอย่างให้เหลือบรรทัดเดียวใน test
   static async searchAndVerify(page: Page, request: APIRequestContext, form: ContactFormFields) {
     // 1) API call → เอา data จริง
-    const contacts = await ContactAPI.fetchContacts(request, {
+    const contacts = await ContactAPI.fetchContacts(page, request, {
       organize_id: "64db6878ed14931d4adca29e",
       template_id: "67b42f057d334a46144e6b1b",
       Email: form.Email,
