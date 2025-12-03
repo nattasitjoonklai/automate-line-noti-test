@@ -57,7 +57,20 @@ jobs:
       env:
         # Add any other environment variables your tests need here
         CRM_BASE_URL: ${{ secrets.CRM_BASE_URL }}
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
       with:
-        name: playwright-report
         path: playwright-report/
-        retention-days: 30
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+
+    - name: Send Report to LINE
+      if: always()
+      run: node scripts/report-to-line.js "${{ inputs.userId }}" "${{ steps.deployment.outputs.page_url }}"
+      env:
+        LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
