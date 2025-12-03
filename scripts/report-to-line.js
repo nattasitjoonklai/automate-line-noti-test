@@ -6,7 +6,43 @@ const LINE_API_URL = 'https://api.line.me/v2/bot/message/push';
 
 // Get arguments
 const userId = process.argv[2];
+const reportUrl = process.argv[3];
 const channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+
+// ... (rest of the file)
+
+// Construct message
+const message = {
+    to: userId,
+    messages: [
+        {
+            type: 'flex',
+            altText: 'Playwright Test Results',
+            contents: {
+                type: 'bubble',
+                // ... (header and body)
+                footer: {
+                    type: 'box',
+                    layout: 'vertical',
+                    spacing: 'sm',
+                    contents: [
+                        {
+                            type: 'button',
+                            style: 'link',
+                            height: 'sm',
+                            action: {
+                                type: 'uri',
+                                label: 'View Full Report',
+                                uri: reportUrl || 'https://github.com/nattasitjoonklai/automate-line-noti-test/actions'
+                            }
+                        }
+                    ],
+                    flex: 0
+                }
+            }
+        }
+    ]
+};
 
 if (!userId) {
     console.error('Error: User ID is required.');
