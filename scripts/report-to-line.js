@@ -9,6 +9,8 @@ const userId = process.argv[2];
 const reportUrl = process.argv[3];
 const channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
+console.log(`Debug: userId=${userId}, reportUrl=${reportUrl}`);
+
 // ... (rest of the file)
 
 // Construct message
