@@ -8,5 +8,5 @@
     "resolveJsonModule": true,
     "allowJs": true
   },
-  "include": ["tests", "src"]
+  "include": ["tests", "src", "playwright.config.ts"]
 }
