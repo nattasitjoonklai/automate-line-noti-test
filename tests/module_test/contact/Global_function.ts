@@ -84,20 +84,46 @@ export class ContactAPI {
     const query = new URLSearchParams(apiParams).toString();
 
 
-    const apiResponse = await request.get(
-      `https://api-dev.cloudcentric.app/api/contacts/filter?${query}`,
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "login-provider": "zitadel",
-          "Content-Type": "application/json",
-        },
+    try {
+      const apiResponse = await request.get(
+        `https://api-dev.cloudcentric.app/api/contacts/filter?${query}`,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "login-provider": "zitadel",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      json_data = await apiResponse.json();
+
+      // Check for OIDC error
+      if (json_data?.error === "invalid_request" && json_data?.error_description === "Errors.OIDCSession.RefreshTokenInvalid") {
+        console.log("⚠️ OIDC Refresh Token Invalid. Attempting to re-login...");
+        await import("../../auth_utils").then(async (module) => {
+          await module.performLogin(page);
+        });
+
+        // Retry the fetch after login
+        const newToken = await this.getToken(page);
+        const retryResponse = await request.get(
+          `https://api-dev.cloudcentric.app/api/contacts/filter?${query}`,
+          {
+            headers: {
+              authorization: `Bearer ${newToken}`,
+              "login-provider": "zitadel",
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        json_data = await retryResponse.json();
       }
-    );
 
-    json_data = await apiResponse.json();
-
-
+    } catch (error) {
+      console.error("Error fetching contacts:", error);
+      throw error;
+    }
 
     const raw = json_data?.data?.data ?? [];
 
