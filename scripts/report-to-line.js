@@ -1,3 +1,4 @@
+require('dotenv').config();
 const fs = require('fs');
 const https = require('https');
 
@@ -208,6 +209,24 @@ try {
                         type: 'box',
                         layout: 'vertical',
                         contents: bodyContents
+                    },
+                    footer: {
+                        type: 'box',
+                        layout: 'vertical',
+                        spacing: 'sm',
+                        contents: [
+                            {
+                                type: 'button',
+                                style: 'link',
+                                height: 'sm',
+                                action: {
+                                    type: 'uri',
+                                    label: 'View Full Report',
+                                    uri: reportUrl || 'https://github.com/nattasitjoonklai/automate-line-noti-test/actions'
+                                }
+                            }
+                        ],
+                        flex: 0
                     }
                 }
             }
