@@ -661,7 +661,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.selectDropdown(data_test.dropdown);
         console.log(`✅ Selected dropdown value: ${data_test.dropdown}`);
     });
@@ -672,7 +672,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.fillInputMultipleDropdown(data_test.multiDropdown);
         console.log(`✅ Selected multi-dropdown values`);
     });
@@ -683,7 +683,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.fillTextInput(data_test.textInput);
         console.log(`✅ Filled text input: ${data_test.textInput}`);
     });
@@ -694,7 +694,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.fillTextInput(data_test.textInputMax);
         await agentDesktop.clickUpdate();
 
@@ -708,7 +708,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.inputText.clear();
         await agentDesktop.clickUpdate();
 
@@ -722,7 +722,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.fillDataMasking(data_test.dataMasking);
         console.log(`✅ Filled data masking: ${data_test.dataMasking}`);
     });
@@ -733,7 +733,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.selectRadio(data_test.radio);
         console.log(`✅ Selected radio: ${data_test.radio}`);
     });
@@ -744,7 +744,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.selectCheckbox(data_test.checkbox);
         console.log(`✅ Selected checkbox: ${data_test.checkbox}`);
     });
@@ -755,7 +755,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         // Assuming image upload uses the same file input or a specific one
         // User said "ใส่รูปภาพ Image"
         // I'll use uploadFiles with a small image
@@ -769,7 +769,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.fillDateTime(data_test.dateTime);
         console.log(`✅ Filled DateTime: ${data_test.dateTime}`);
     });
@@ -780,7 +780,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.fillDate(data_test.date);
         console.log(`✅ Filled Date: ${data_test.date}`);
     });
@@ -791,7 +791,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.fillTime(data_test.time);
         console.log(`✅ Filled Time: ${data_test.time}`);
     });
@@ -802,7 +802,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
 
         // Setup popup listener
         const popupPromise = page.waitForEvent('popup');
@@ -819,7 +819,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.fillSegment(data_test.segment);
         // Verify segment input shows up or something changes?
         // User says "เลือกกลุ่มข้อมูลในกลุ่มที่เลือกจะแสดงให้ใส่ข้อมูล Segment"
@@ -833,7 +833,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         // Assuming group input exists, using placeholder method
         // await agentDesktop.fillGroup("Test Group"); 
         console.log(`✅ Verified Group input (placeholder)`);
@@ -845,7 +845,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         // Assuming there is a search input in the contact form?
         // Or is it the main search? The title says "แก้ไขข้อมูลหน้าContact" (Edit Contact Page)
         // Create_Element had `input_Search_inputName`.
@@ -860,7 +860,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await expect(page.getByText('Attach File สามารถอัปโหลดได้สูงสุด 10 ไฟล์และขนาดไฟล์ทั้งหมดไม่เกิน 5 MB')).toBeVisible();
         console.log(`✅ Verified file upload warning message`);
     });
@@ -871,7 +871,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.pdf_small]);
         await expect(page.getByText(data_test.files.pdf_small)).toBeVisible();
         console.log(`✅ Uploaded small PDF`);
@@ -883,7 +883,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.pdf_large]);
         await agentDesktop.verifyErrorMessage("ขนาดไฟล์ไม่เกิน 5 Mb");
         console.log(`✅ Verified error for large PDF`);
@@ -895,7 +895,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.doc_small]);
         await expect(page.getByText(data_test.files.doc_small)).toBeVisible();
         console.log(`✅ Uploaded small DOC`);
@@ -907,7 +907,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.doc_large]);
         await agentDesktop.verifyErrorMessage("ขนาดไฟล์ไม่เกิน 5 Mb");
         console.log(`✅ Verified error for large DOC`);
@@ -919,7 +919,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.docx_small]);
         await expect(page.getByText(data_test.files.docx_small)).toBeVisible();
         console.log(`✅ Uploaded small DOCX`);
@@ -931,7 +931,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.docx_large]);
         await agentDesktop.verifyErrorMessage("ขนาดไฟล์ไม่เกิน 5 Mb");
         console.log(`✅ Verified error for large DOCX`);
@@ -943,7 +943,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.xls_small]);
         await expect(page.getByText(data_test.files.xls_small)).toBeVisible();
         console.log(`✅ Uploaded small XLS`);
@@ -967,7 +967,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.xlsx_small]);
         await expect(page.getByText(data_test.files.xlsx_small)).toBeVisible();
         console.log(`✅ Uploaded small XLSX`);
@@ -979,7 +979,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.xlsx_large]);
         await agentDesktop.verifyErrorMessage("ขนาดไฟล์ไม่เกิน 5 Mb");
         console.log(`✅ Verified error for large XLSX`);
@@ -991,7 +991,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.csv_small]);
         await expect(page.getByText(data_test.files.csv_small)).toBeVisible();
         console.log(`✅ Uploaded small CSV`);
@@ -1003,7 +1003,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.csv_large]);
         await agentDesktop.verifyErrorMessage("ขนาดไฟล์ไม่เกิน 5 Mb");
         console.log(`✅ Verified error for large CSV`);
@@ -1015,7 +1015,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.png_small]);
         await expect(page.getByText(data_test.files.png_small)).toBeVisible();
         console.log(`✅ Uploaded small PNG`);
@@ -1027,7 +1027,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.png_large]);
         await agentDesktop.verifyErrorMessage("ขนาดไฟล์ไม่เกิน 5 Mb");
         console.log(`✅ Verified error for large PNG`);
@@ -1039,7 +1039,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.jpg_small]);
         await expect(page.getByText(data_test.files.jpg_small)).toBeVisible();
         console.log(`✅ Uploaded small JPG`);
@@ -1051,7 +1051,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.jpg_large]);
         await agentDesktop.verifyErrorMessage("ขนาดไฟล์ไม่เกิน 5 Mb");
         console.log(`✅ Verified error for large JPG`);
@@ -1063,7 +1063,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.jpeg_small]);
         await expect(page.getByText(data_test.files.jpeg_small)).toBeVisible();
         console.log(`✅ Uploaded small JPEG`);
@@ -1075,7 +1075,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.jpeg_large]);
         await agentDesktop.verifyErrorMessage("ขนาดไฟล์ไม่เกิน 5 Mb");
         console.log(`✅ Verified error for large JPEG`);
@@ -1087,7 +1087,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.png_small]);
         await expect(page.getByText(data_test.files.png_small)).toBeVisible();
 
@@ -1102,7 +1102,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.clickSync();
         // Verify sync action (maybe a new input appears or a message)
         console.log(`✅ Clicked Sync button`);
@@ -1114,7 +1114,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.addNote("Test Note");
         // Verify note appears in list
         // Assuming noteListItems selector works
@@ -1128,7 +1128,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.saveContact();
         console.log(`✅ Verified Update Contact Success`);
     });

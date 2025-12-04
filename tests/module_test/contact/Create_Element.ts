@@ -215,6 +215,13 @@ export class Element_Create_Contact {
 
     const hasValue = (v) => v !== undefined && v !== null && v !== "";
 
+    // Map single address fields to dynamic fields (Address_no -> Address_no_1)
+    if (hasValue(fields.Address_no) && !hasValue(fields.Address_no_1)) fields.Address_no_1 = fields.Address_no;
+    if (hasValue(fields.Address_district) && !hasValue(fields.Address_district_1)) fields.Address_district_1 = fields.Address_district;
+    if (hasValue(fields.Address_subdistrict) && !hasValue(fields.Address_subdistrict_1)) fields.Address_subdistrict_1 = fields.Address_subdistrict;
+    if (hasValue(fields.Address_province) && !hasValue(fields.Address_province_1)) fields.Address_province_1 = fields.Address_province;
+    if (hasValue(fields.Address_zipcode) && !hasValue(fields.Address_zipcode_1)) fields.Address_zipcode_1 = fields.Address_zipcode;
+
     if (hasValue(fields.Name)) await this.inputName.fill(fields.Name);
     if (hasValue(fields.Phone)) await this.inputPhone.fill(fields.Phone);
     if (hasValue(fields.Email)) await this.inputEmail.fill(fields.Email);

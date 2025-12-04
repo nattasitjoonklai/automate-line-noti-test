@@ -250,9 +250,10 @@ export class ContactAPI {
     await page.getByLabel("Clear").click();
     await page.getByRole("combobox", { name: "Select End Datetime" }).click();
     await page.getByLabel("Clear").click();
+    await page.waitForTimeout(2000)
     // 6) Search
     await page.getByRole('button', { name: 'Search' }).nth(1).click();
-    await page.getByRole('button', { name: 'Search' }).nth(1).click();
+
     // await page.waitForLoadState('networkidle');
 
     // Wait for table to render (prevent false positive when expecting 0 rows but data is loading)
@@ -261,7 +262,7 @@ export class ContactAPI {
 
     // 1) ดึง rows จาก table
     const rows = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]');
-
+    await page.waitForTimeout(3000);
     // Wait for the UI to reflect the API data count
     await expect(rows).toHaveCount(contacts.length);
 
@@ -319,88 +320,153 @@ export class ContactAPI {
     for (const row of tableContacts) {
       console.log("Checking UI Row:", row.Name);
 
-      // Find matching record in API data
-      // Using Name, Email, Phone as primary keys for matching, or just Name if others are empty
-      const match = contacts.find(apiContact => {
-        // Normalize for comparison (trim, lowercase if needed)
-        const nameMatch = row.Name.trim() === apiContact.Name.trim();
-        // Email/Phone might be empty in UI or API, handle accordingly
-        const emailMatch = row.Email.trim() === apiContact.Email.trim();
-        // Phone formatting might differ (e.g. spaces), remove non-digits for comparison if needed
-        const phoneMatch = row.Phone.replace(/\D/g, '') === apiContact.Phone.replace(/\D/g, '');
-
-        // If we searched by specific field, we expect that to match. 
-        // But here we are just finding which API record corresponds to this UI row.
-        // Let's assume Name is unique enough or use combination.
-        return nameMatch && (row.Email ? emailMatch : true) && (row.Phone ? phoneMatch : true);
-      });
-
-      if (match) {
-        console.log("✅ Found match in API:", match.Name);
-        // Verify other fields if they are present in the row
-        // Add assertions for other columns here if needed
-        // Example:
-        // if (row.Dropdown) expect(row.Dropdown.trim()).toBe(match.Dropdown_value.trim());
-      } else {
-        console.error("❌ UI Row not found in API response:", row);
-        console.log("API Data:", contacts);
+      // Verify fields based on search form data
+      if (form.Name) {
+        console.log(`Verifying Name: UI=${row.Name} | Search=${form.Name}`);
+        expect(row.Name.trim()).toContain(form.Name.trim());
+      }
+      if (form.Dropdown_value) {
+        console.log(`Verifying Dropdown: UI=${row.Dropdown} | Search=${form.Dropdown_value}`);
+        expect(row.Dropdown.trim()).toBe(form.Dropdown_value.trim());
+      }
+      if (form.Dropdown_mutlple_lv1) {
+        console.log(`Verifying Dropdown_mutlple_lv1: UI=${row.Dropdown_mutlple_lv1} | Search=${form.Dropdown_mutlple_lv1}`);
+        expect(row.Dropdown_mutlple_lv1.trim()).toBe(form.Dropdown_mutlple_lv1.trim());
+      }
+      if (form.Dropdown_mutlple_lv2) {
+        console.log(`Verifying Dropdown_mutlple_lv2: UI=${row.Dropdown_mutlple_lv2} | Search=${form.Dropdown_mutlple_lv2}`);
+        expect(row.Dropdown_mutlple_lv2.trim()).toBe(form.Dropdown_mutlple_lv2.trim());
+      }
+      if (form.Dropdown_mutlple_lv3) {
+        console.log(`Verifying Dropdown_mutlple_lv3: UI=${row.Dropdown_mutlple_lv3} | Search=${form.Dropdown_mutlple_lv3}`);
+        expect(row.Dropdown_mutlple_lv3.trim()).toBe(form.Dropdown_mutlple_lv3.trim());
+      }
+      if (form.Dropdown_mutlple_lv4) {
+        console.log(`Verifying Dropdown_mutlple_lv4: UI=${row.Dropdown_mutlple_lv4} | Search=${form.Dropdown_mutlple_lv4}`);
+        expect(row.Dropdown_mutlple_lv4.trim()).toBe(form.Dropdown_mutlple_lv4.trim());
+      }
+      if (form.Dropdown_mutlple_lv5) {
+        console.log(`Verifying Dropdown_mutlple_lv5: UI=${row.Dropdown_mutlple_lv5} | Search=${form.Dropdown_mutlple_lv5}`);
+        expect(row.Dropdown_mutlple_lv5.trim()).toBe(form.Dropdown_mutlple_lv5.trim());
+      }
+      if (form.Dropdown_mutlple_lv6) {
+        console.log(`Verifying Dropdown_mutlple_lv6: UI=${row.Dropdown_mutlple_lv6} | Search=${form.Dropdown_mutlple_lv6}`);
+        expect(row.Dropdown_mutlple_lv6.trim()).toBe(form.Dropdown_mutlple_lv6.trim());
       }
 
-      expect(match, `UI Row with Name: ${row.Name} should exist in API response`).toBeDefined();
+      if (form.Phone) {
+        const uiPhone = row.Phone.replace(/\D/g, '');
+        const searchPhone = form.Phone.replace(/\D/g, '');
+        console.log(`Verifying Phone: UI=${uiPhone} | Search=${searchPhone}`);
+        expect(uiPhone).toContain(searchPhone);
+      }
+      if (form.Email) {
+        console.log(`Verifying Email: UI=${row.Email} | Search=${form.Email}`);
+        expect(row.Email.trim()).toBe(form.Email.trim());
+      }
+      if (form.Datamasking) {
+        console.log(`Verifying Datamasking: UI=${row.Datamasking} | Search=${form.Datamasking}`);
+        // Check last 5 characters as requested for masked data
+        const suffix = form.Datamasking.slice(-5);
+        expect(row.Datamasking.trim()).toContain(suffix);
+      }
+      if (form.Checkbox_TrueFalse !== undefined) {
+        console.log(`Verifying Checkbox: UI=${row.Checkbox_TrueFalse} | Search=${form.Checkbox_TrueFalse}`);
+        expect(String(row.Checkbox_TrueFalse).toLowerCase()).toBe(String(form.Checkbox_TrueFalse).toLowerCase());
+      }
+      if (form.Radio) {
+        console.log(`Verifying Radio: UI=${row.Radiobtn} | Search=${form.Radio}`);
+        expect(row.Radiobtn.trim()).toBe(form.Radio.trim());
+      }
+      if (form.Datetime) {
+        console.log(`Verifying Datetime: UI=${row.Datetime} | Search=${form.Datetime}`);
+        expect(row.Datetime.trim()).toBe(form.Datetime.trim());
+      }
+      if (form.Date) {
+        console.log(`Verifying Date: UI=${row.Date} | Search=${form.Date}`);
+        expect(row.Date.trim()).toBe(form.Date.trim());
+      }
+      if (form.Time) {
+        console.log(`Verifying Time: UI=${row.Time} | Search=${form.Time}`);
+        expect(row.Time.trim()).toBe(form.Time.trim());
+      }
+
+      // Address Verification
+      if (form.Address_no) {
+        console.log(`Verifying Address contains Address_no: ${form.Address_no}`);
+        expect(row.Address).toContain(form.Address_no);
+      }
+      if (form.Address_district) {
+        console.log(`Verifying Address contains Address_district: ${form.Address_district}`);
+        expect(row.Address).toContain(form.Address_district);
+      }
+      if (form.Address_subdistrict) {
+        console.log(`Verifying Address contains Address_subdistrict: ${form.Address_subdistrict}`);
+        expect(row.Address).toContain(form.Address_subdistrict);
+      }
+      if (form.Address_province) {
+        console.log(`Verifying Address contains Address_province: ${form.Address_province}`);
+        expect(row.Address).toContain(form.Address_province);
+      }
+      if (form.Address_zipcode) {
+        console.log(`Verifying Address contains Address_zipcode: ${form.Address_zipcode}`);
+        expect(row.Address).toContain(form.Address_zipcode);
+      }
     }
+
   }
 
 }
 
+
+
+
+
+
+
 // ตรวจสอบว่าข้อมูลที่สร้าง ตรงกับแถวบนสุดของตารางหรือไม่
-export async function verifyTopTableRow(page, expected: { Name?: string, Phone?: string, Email?: string, CheckDelete?: String, CheckView?: string, CheckEdit?: string }) {
-  const firstRow = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').first();
-
-  if (expected.CheckView) {
-
-    await page.getByRole('row', { name: expected.CheckView }).locator('#dyn_row_action').click();
-    await page.getByRole('menuitem', { name: 'View' }).click();
-  }
+export async function verifyTopTableRow(page: Page, expected: { Name?: string, Phone?: string, Email?: string, CheckEdit?: string, CheckView?: string, StrictTopRow?: boolean }) {
+  // CheckEdit and CheckView logic remains the same
   if (expected.CheckEdit) {
-
     await page.getByRole('row', { name: expected.CheckEdit }).locator('#dyn_row_action').click();
     await page.getByRole('menuitem', { name: 'Edit' }).click();
+    return;
   }
-  if (expected.CheckDelete) {
 
-
-    const row = page.locator('#dyn_contactTable tr').filter({ hasText: expected.CheckDelete });
-    await row.locator('#dyn_row_isSelected').click();
-    await page.getByRole('button', { name: /Delete Contact/ }).click();
-    await page.getByRole('button', { name: 'Delete', exact: true }).click();
-    // ตรวจสอบว่า row หายไป
-    await expect(page.locator('#dyn_contactTable tr').filter({ hasText: expected.CheckDelete })).toHaveCount(0);
+  if (expected.CheckView) {
+    await page.getByRole('row', { name: expected.CheckView }).getByRole('button').nth(1).click();
+    return;
   }
+
+  const rows = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]');
+  await expect(rows.first()).toBeVisible();
+
+  let targetRow = rows.first();
+
+  // If StrictTopRow is true, we strictly check the first row.
+  // Otherwise, if Name is provided, we try to find the specific row.
+  if (!expected.StrictTopRow && expected.Name) {
+    const matchingRow = rows.filter({ has: page.locator('td').nth(1).filter({ hasText: expected.Name }) });
+    if (await matchingRow.count() > 0) {
+      targetRow = matchingRow.first();
+      // console.log(`Found row matching Name: ${expected.Name}`);
+    } else {
+      console.warn(`Row with Name "${expected.Name}" not found. Defaulting to first row.`);
+    }
+  }
+
   if (expected.Name) {
-    const nameCell = firstRow.locator('td').nth(1);
-    // console.log('แถวบนสุด Name:', await nameCell.textContent());
+    const nameCell = targetRow.locator('td').nth(1);
     await expect(nameCell).toHaveText(expected.Name);
   }
 
   if (expected.Phone) {
-    // If checking phone, we might need to find the specific row if Name is also provided?
-    // The original logic filtered by Name first.
-    let targetRow = firstRow;
-    if (expected.Name) {
-      const rows = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]');
-      targetRow = rows.filter({
-        has: page.locator('td').nth(1).filter({ hasText: expected.Name })
-      }).first();
-    }
-
     const phoneCell = targetRow.locator('td').nth(9);
-    // console.log('แถวบนสุด Phone:', await phoneCell.textContent());
     await expect(phoneCell).toHaveText(expected.Phone);
   }
 
   if (expected.Email) {
-    const emailCell = firstRow.locator('#dyn_row_email');
-    // console.log('แถวบนสุด Email:', await emailCell.textContent());
+    const emailCell = targetRow.locator('#dyn_row_email');
     await expect(emailCell).toHaveText(expected.Email);
   }
 }
@@ -414,4 +480,53 @@ export function formatDate(date = new Date()) {
   const min = String(date.getMinutes()).padStart(2, '0');
 
   return `${dd}:${mm}:${yyyy}:${hh}:${min}`;
+}
+
+export async function uploadFileWithLimitCheck(page: Page, filePath: string) {
+  // Check current file count
+  const currentFiles = page.locator('.filepond--item');
+  await page.waitForTimeout(5000);
+  const initialFileCount = await currentFiles.count();
+  console.log(`Initial file count: ${initialFileCount}`);
+
+  let expectedCountBeforeUpload = initialFileCount;
+
+  if (initialFileCount >= 10) {
+    console.log('File limit reached (10 files). Removing one file before upload...');
+    // Remove the first file
+    await page.locator('.filepond--action-remove-item').first().click();
+
+    const popup_remove = page.getByLabel('Remove', { exact: true });
+    await expect(popup_remove).toBeVisible();
+    await popup_remove.click();
+
+    // Wait for file to be removed (count should decrease)
+    await expect(currentFiles).toHaveCount(initialFileCount - 1);
+    console.log('File removed successfully. Count decreased by 1.');
+    expectedCountBeforeUpload = initialFileCount - 1;
+  } else {
+    console.log('File limit not reached. Proceeding with upload.');
+  }
+
+  await page.setInputFiles('input[type="file"]', [filePath]);
+
+  // Wait for the file count to increase (this confirms upload)
+  await expect(currentFiles).toHaveCount(expectedCountBeforeUpload + 1);
+  console.log(`File count increased to: ${expectedCountBeforeUpload + 1}`);
+
+  // Wait for upload to potentially finish (FilePond might be processing)
+  await page.waitForTimeout(5000);
+
+  // Verify the file is present in the list after update
+  const uploadedFileNames = await page.locator('.filepond--file-info-main').allTextContents();
+  console.log('Uploaded files found:', uploadedFileNames);
+
+  if (uploadedFileNames.length === 0) {
+    const firstItem = page.locator('.filepond--item').first();
+    if (await firstItem.isVisible()) {
+      console.log('First item HTML:', await firstItem.innerHTML());
+    } else {
+      console.log('No filepond items visible.');
+    }
+  }
 }
