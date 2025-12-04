@@ -12,7 +12,7 @@ import {
 } from "./Global_function";
 const data_test = {
     name: "TestData0",
-    name_edt: "TestData0_EDT",
+    name_edt: "ทดสอบ AGTDT",
     phone: "0812345678",
     email: "test@example.com",
     email_edt: "test_edt@example.com",
@@ -885,7 +885,7 @@ test.describe('Agent Desktop Tests', () => {
 
         await agentDesktop.tabContact.click();
         await agentDesktop.uploadFiles([data_test.files.pdf_large]);
-        await agentDesktop.verifyErrorMessage("You cannot upload a file larger than 5 MB");
+        await agentDesktop.verifyErrorMessage("ขนาดไฟล์ไม่เกิน 5 Mb");
         console.log(`✅ Verified error for large PDF`);
     });
 
@@ -909,7 +909,7 @@ test.describe('Agent Desktop Tests', () => {
 
         await agentDesktop.tabContact.click();
         await agentDesktop.uploadFiles([data_test.files.doc_large]);
-        await agentDesktop.verifyErrorMessage("You cannot upload a file larger than 5 MB");
+        await agentDesktop.verifyErrorMessage("ขนาดไฟล์ไม่เกิน 5 Mb");
         console.log(`✅ Verified error for large DOC`);
     });
 
@@ -933,7 +933,7 @@ test.describe('Agent Desktop Tests', () => {
 
         await agentDesktop.tabContact.click();
         await agentDesktop.uploadFiles([data_test.files.docx_large]);
-        await agentDesktop.verifyErrorMessage("You cannot upload a file larger than 5 MB");
+        await agentDesktop.verifyErrorMessage("ขนาดไฟล์ไม่เกิน 5 Mb");
         console.log(`✅ Verified error for large DOCX`);
     });
 
@@ -955,9 +955,9 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.createTicketExistingContact(data_test.name_edt);
 
-        await agentDesktop.tabContact.click();
+
         await agentDesktop.uploadFiles([data_test.files.xls_large]);
-        await agentDesktop.verifyErrorMessage("You cannot upload a file larger than 5 MB");
+        await agentDesktop.verifyErrorMessage("ขนาดไฟล์ไม่เกิน 5 Mb");
         console.log(`✅ Verified error for large XLS`);
     });
 
@@ -981,7 +981,7 @@ test.describe('Agent Desktop Tests', () => {
 
         await agentDesktop.tabContact.click();
         await agentDesktop.uploadFiles([data_test.files.xlsx_large]);
-        await agentDesktop.verifyErrorMessage("You cannot upload a file larger than 5 MB");
+        await agentDesktop.verifyErrorMessage("ขนาดไฟล์ไม่เกิน 5 Mb");
         console.log(`✅ Verified error for large XLSX`);
     });
 
@@ -1005,7 +1005,7 @@ test.describe('Agent Desktop Tests', () => {
 
         await agentDesktop.tabContact.click();
         await agentDesktop.uploadFiles([data_test.files.csv_large]);
-        await agentDesktop.verifyErrorMessage("You cannot upload a file larger than 5 MB");
+        await agentDesktop.verifyErrorMessage("ขนาดไฟล์ไม่เกิน 5 Mb");
         console.log(`✅ Verified error for large CSV`);
     });
 
@@ -1029,7 +1029,7 @@ test.describe('Agent Desktop Tests', () => {
 
         await agentDesktop.tabContact.click();
         await agentDesktop.uploadFiles([data_test.files.png_large]);
-        await agentDesktop.verifyErrorMessage("You cannot upload a file larger than 5 MB");
+        await agentDesktop.verifyErrorMessage("ขนาดไฟล์ไม่เกิน 5 Mb");
         console.log(`✅ Verified error for large PNG`);
     });
 
@@ -1053,7 +1053,7 @@ test.describe('Agent Desktop Tests', () => {
 
         await agentDesktop.tabContact.click();
         await agentDesktop.uploadFiles([data_test.files.jpg_large]);
-        await agentDesktop.verifyErrorMessage("You cannot upload a file larger than 5 MB");
+        await agentDesktop.verifyErrorMessage("ขนาดไฟล์ไม่เกิน 5 Mb");
         console.log(`✅ Verified error for large JPG`);
     });
 
@@ -1077,7 +1077,7 @@ test.describe('Agent Desktop Tests', () => {
 
         await agentDesktop.tabContact.click();
         await agentDesktop.uploadFiles([data_test.files.jpeg_large]);
-        await agentDesktop.verifyErrorMessage("You cannot upload a file larger than 5 MB");
+        await agentDesktop.verifyErrorMessage("ขนาดไฟล์ไม่เกิน 5 Mb");
         console.log(`✅ Verified error for large JPEG`);
     });
 

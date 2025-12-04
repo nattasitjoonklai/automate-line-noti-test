@@ -36,7 +36,28 @@ export class ContactAPI {
   // ดึง token จาก localStorage
   static async getToken(page: Page): Promise<string> {
     const token = await page.evaluate(() => {
-      return localStorage.getItem('access_token');
+      // Try direct access first
+      const directToken = localStorage.getItem('access_token');
+      if (directToken) return directToken;
+
+      // Look for OIDC user key
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('oidc.user:')) {
+          const val = localStorage.getItem(key);
+          if (val) {
+            try {
+              const parsed = JSON.parse(val);
+              if (parsed.access_token) {
+                return parsed.access_token;
+              }
+            } catch (e) {
+              // ignore parse error
+            }
+          }
+        }
+      }
+      return null;
     });
 
     if (!token) {
@@ -96,7 +117,28 @@ export class ContactAPI {
         }
       );
 
-      json_data = await apiResponse.json();
+      if (apiResponse.status() === 500) {
+        console.log("⚠️ API Error 500. Attempting to re-login...");
+        await import("../../auth_utils").then(async (module) => {
+          await module.performLogin(page);
+        });
+
+        // Retry the fetch after login
+        const newToken = await this.getToken(page);
+        const retryResponse = await request.get(
+          `https://api-dev.cloudcentric.app/api/contacts/filter?${query}`,
+          {
+            headers: {
+              authorization: `Bearer ${newToken}`,
+              "login-provider": "zitadel",
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        json_data = await retryResponse.json();
+      } else {
+        json_data = await apiResponse.json();
+      }
 
       // Check for OIDC error
       if (json_data?.error === "invalid_request" && json_data?.error_description === "Errors.OIDCSession.RefreshTokenInvalid") {
@@ -163,6 +205,11 @@ export class ContactAPI {
   }
   // 🔥 รวมทุกอย่างให้เหลือบรรทัดเดียวใน test
   static async searchAndVerify(page: Page, request: APIRequestContext, form: ContactFormFields) {
+    // 2) เปิดหน้า
+    await page.goto("/contact");
+    // 2.1) wait for load
+    await expect(page.locator('#dyn_contactTable')).toBeVisible();
+
     // 1) API call → เอา data จริง
     const contacts = await ContactAPI.fetchContacts(page, request, {
       organize_id: "64db6878ed14931d4adca29e",
@@ -191,12 +238,6 @@ export class ContactAPI {
       Time: form.Time
 
     });
-
-    // 2) เปิดหน้า
-    await page.goto("/contact");
-    // 2.1) wait for load
-    // 2.1) wait for load
-    await expect(page.locator('#dyn_contactTable')).toBeVisible();
     // 3) เปิด filter
     await page.getByRole("button", { name: "Search" }).nth(2).click();
 

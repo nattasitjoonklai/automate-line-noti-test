@@ -1,0 +1,40 @@
+[dotenv@17.2.3] injecting env (2) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+
+Running 1 test using 1 worker
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔄 add secrets lifecycle management: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+
+
+  1) [contact] › tests/module_test/contact/contact.spec.ts:1540:5 › CRM_CT00112	"ติ๊กกล่องเลือกข้อมูล Contact สำหรับลบรายชื่อลูกค้า (ปุ่มDelete Contact)" @smoke 
+
+    Test was interrupted.
+
+    Error: locator.click: Test ended.
+    Call log:
+    [2m  - waiting for getByRole('button', { name: 'Create Contact' })[22m
+
+
+      1545 |   // 1. Create Contact
+      1546 |   await contactCreate.goto();
+    > 1547 |   await contactCreate.btnCreateContact.click();
+           |                                        ^
+      1548 |
+      1549 |   const deleteContactData = {
+      1550 |     ...contact_Search_Data,
+        at /Users/cs/Desktop/crm-automate 2/tests/module_test/contact/contact.spec.ts:1547:40
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/module_test-contact-contac-6be37-้า-ปุ่มDelete-Contact-smoke-contact/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/module_test-contact-contac-6be37-้า-ปุ่มDelete-Contact-smoke-contact/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/module_test-contact-contac-6be37-้า-ปุ่มDelete-Contact-smoke-contact/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 interrupted
+    [contact] › tests/module_test/contact/contact.spec.ts:1540:5 › CRM_CT00112	"ติ๊กกล่องเลือกข้อมูล Contact สำหรับลบรายชื่อลูกค้า (ปุ่มDelete Contact)" @smoke 

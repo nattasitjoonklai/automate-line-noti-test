@@ -179,7 +179,7 @@ export class Element_AgentDesktop {
         this.segment = page.locator('#dyn_name_segment').first();
         this.input_segment = page.locator('#dyn_text_segment').first();
 
-        this.fileInput = page.locator('input[type="file"]');
+        this.fileInput = page.locator('input[type="file"]').first();
         this.btnRemoveFile = page.locator('button.remove-file').first(); // Placeholder selector
         this.btnConfirmRemoveFile = page.getByRole('button', { name: 'Remove', exact: true });
 

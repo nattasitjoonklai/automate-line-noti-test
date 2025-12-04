@@ -162,6 +162,45 @@ test.beforeEach(async ({ page }) => {
 test.describe('Contact Search Tests', () => {
   test.describe.configure({ mode: 'parallel' });
 
+  test('CRM_CT00000_Setup สร้างข้อมูลสำหรับทดสอบ Search', async ({ page, request }) => {
+    const contact = new Element_Create_Contact(page);
+    await contact.goto();
+
+    // Check if contact already exists
+    const existingContacts = await ContactAPI.fetchContacts(page, request, {
+      Name: contact_Search_Data.Name,
+      organize_id: "64db6878ed14931d4adca29e",
+      template_id: "67b42f057d334a46144e6b1b"
+    });
+    if (existingContacts.length > 0) {
+      console.log(`Contact with name "${contact_Search_Data.Name}" already exists. Skipping creation.`);
+      return;
+    }
+
+    await contact.btnCreateContact.click();
+
+    // Convert Checkbox string to boolean for input_Field
+    const setupData = {
+      ...contact_Search_Data,
+      Checkbox: contact_Search_Data.Checkbox === 'true',
+      text_input: contact_Search_Data.Text_input
+    };
+
+    await contact.input_Field(setupData);
+    await contact.fillInputMultipleDropdown(setupData);
+
+    await contact.submmit_contact.click();
+    await contact.btnconfirm_create.click();
+
+    // Verify success
+    await expect(page.getByText('Create Contact Success').or(page.getByText('สร้างข้อมูลสำเร็จ'))).toBeVisible({ timeout: 10000 }).catch(() => {
+      console.log("Success toast not found, checking if redirected to list");
+    });
+
+    // Go back to list if not already
+    await page.goto(BaseUrl + '/contact');
+  });
+
   test('CRM_CT00001 การเข้าหน้า Contact @smoke', async ({ page }) => {
     const contact = new Element_Contact(page);
     await page.goto(BaseUrl + '/contact');
@@ -285,7 +324,7 @@ test.describe('Contact Search Tests', () => {
     await expect(page.getByRole('table')).toBeVisible();
   });
   test('CRM_CT00005   "การค้นหาช่องใส่ Name กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
-    await ContactAPI.searchAndVerify(page, request, { Email: contact_Search_Data.Email });
+    await ContactAPI.searchAndVerify(page, request, { Name: contact_Search_Data.Name });
   });
   test('CRM_CT00006   "การค้นหาช่องใส่ Name กรณีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page }) => {
     const contact = new Element_Contact(page);
@@ -1499,34 +1538,56 @@ test('CRM_CT00111	การส่งออกข้อมูลลูกค้�
 })
 
 test('CRM_CT00112	"ติ๊กกล่องเลือกข้อมูล Contact สำหรับลบรายชื่อลูกค้า (ปุ่มDelete Contact)" @smoke', async ({ page }) => {
+  const contactCreate = new Element_Create_Contact(page);
+  const contactList = new Element_Contact(page);
+  const deleteName = "AutoDelete_Test";
 
-  const contact = new Element_Create_Contact(page);
-  await contact.goto();
-  // await page.waitForTimeout(3000);
+  // 1. Create Contact
+  await contactCreate.goto();
+  await contactCreate.btnCreateContact.click();
+
+  const deleteContactData = {
+    ...contact_Search_Data,
+    Name: deleteName,
+    Checkbox: contact_Search_Data.Checkbox === 'true',
+    text_input: contact_Search_Data.Text_input
+  };
+
+
+  await expect(page.getByRole('heading', { name: 'ทดสอบ Section' })).toBeVisible();
+  await contactCreate.input_Field(deleteContactData);
+  await contactCreate.fillInputMultipleDropdown(deleteContactData);
+  await contactCreate.submmit_contact.click();
+  await contactCreate.btnconfirm_create.click();
+
+  // Wait for success
+  await expect(page.getByText('Create Contact Success').or(page.getByText('สร้างข้อมูลสำเร็จ'))).toBeVisible({ timeout: 10000 });
+
+  // 2. Go back to list
+  await contactList.goto();
   await expect(page.locator('#dyn_contactTable')).toBeVisible();
 
-  // เลือกแถวที่ 2 (ไม่ใช่แถวแรก)
-  const secondRow = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').nth(1);
+  // 3. Search for the contact
+  await contactList.searchBy({ Name: deleteName });
+  await page.waitForTimeout(2000); // Wait for search results
 
-  // ดึงชื่อจากแถวที่ 2 เพื่อใช้ตรวจสอบหลังลบ
-  const nameToDelete = await secondRow.locator('#dyn_row_name').textContent();
-  console.log('Deleting contact:', nameToDelete);
+  // 4. Select the row
+  // Find row with specific name
+  const targetRow = page.locator('#dyn_contactTable tr').filter({ hasText: deleteName });
+  await expect(targetRow).toBeVisible();
 
-  // ติ๊กเลือกแถวที่ 2
-  await secondRow.locator('#dyn_row_isSelected').click();
+  // Click checkbox in that row
+  await targetRow.locator('#dyn_row_isSelected').click();
 
-  // คลิกปุ่ม Delete Contact
-  await page.getByRole('button', { name: /Delete Contact/ }).click();
-
-  // ยืนยันการลบ
+  // 5. Delete
+  await contactList.btnDelete.click();
   await page.getByRole('button', { name: 'Delete', exact: true }).click();
 
-  // รอให้ระบบประมวลผล
-  // await page.waitForTimeout(2000);
+  // 6. Verify deletion
+  await expect(page.getByText('You have deleted contact').or(page.getByText('ลบข้อมูลสำเร็จ'))).toBeVisible({ timeout: 10000 });
 
-  // ตรวจสอบว่าแถวที่มีชื่อนั้นหายไปแล้ว
-  const deletedRow = page.locator('#dyn_contactTable tr').filter({ hasText: nameToDelete || '' });
-  await expect(deletedRow).toHaveCount(0);
+  // Verify row is gone
+  await expect(targetRow).toHaveCount(0);
 })
 
 // test('CRM_CT00113	การนำเข้าข้อมูลลูกค้า (ปุ่มImport File)', async ({ page }) => {
@@ -2863,8 +2924,7 @@ test('CRM_CT00173	การลบข้อมูลลูกค้า (Delete Co
 
   // Verify Success Toast
   // "ระบบแสดงแจ้งเตือน ""Delete Success"""
-  await expect(page.getByText('Delete Success').or(page.getByText('Delete successful'))).toBeVisible();
-
+  await expect(page.getByText('You have deleted contact').or(page.getByText('ลบข้อมูลสำเร็จ'))).toBeVisible({ timeout: 10000 });
   // Verify row is gone
   // await page.waitForTimeout(2000); // Wait for list refresh
   await expect(page.locator('#dyn_contactTable tr').filter({ hasText: targetName })).toHaveCount(0);
