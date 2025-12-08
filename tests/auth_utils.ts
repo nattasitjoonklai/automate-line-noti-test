@@ -13,11 +13,38 @@ const CRM_PASS_TEST = "P@ssw0rd";
 export async function performLogin(page: Page) {
     // login state
     await page.goto(LoginPage);
+
     await page.getByRole("button", { name: "Sign In" }).click();
+    await page.waitForTimeout(3000);
     await page.getByRole("textbox", { name: "Login Name" }).fill(CRM_USER_TEST);
+    await page.waitForTimeout(3000);
     await page.getByRole("button", { name: "Next" }).click();
+    await page.waitForTimeout(3000);
     await page.getByRole("textbox", { name: "Password" }).fill(CRM_PASS_TEST);
+    await page.waitForTimeout(3000);
     await page.getByRole("button", { name: "Next" }).click();
+    await page.waitForTimeout(3000);
+
+    // select  Full_test Ticket Automate template
+    await page.waitForURL(HomePage);
+
+    await page.getByRole('tab', { name: 'Full_Test Automate' }).click();
+    // select  Test edit Contact  Automate template
+    await page.getByText('Testedit', { exact: true }).click();
+    await page.getByText("Save").click();
+
+    await page.context().storageState({ path: templateFile });
+
+}
+
+export async function performReLogin(page: Page) {
+    // Re-login flow when session expires but user is remembered
+    await page.getByRole("button", { name: "Sign In" }).click();
+    await page.getByRole('button', { name: 'Nattasit CloudsoftTest' }).click();
+    await page.getByRole('textbox', { name: 'Password' }).click();
+    await page.getByRole('textbox', { name: 'Password' }).fill(CRM_PASS_TEST);
+    await page.getByRole('button', { name: 'Next' }).click();
+    await page.waitForTimeout(3000); // Wait for redirect
 
     // select  Full_test Ticket Automate template
     await page.waitForURL(HomePage);

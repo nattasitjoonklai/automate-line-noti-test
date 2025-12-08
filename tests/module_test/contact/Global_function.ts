@@ -434,7 +434,8 @@ export async function verifyTopTableRow(page: Page, expected: { Name?: string, P
   }
 
   if (expected.CheckView) {
-    await page.getByRole('row', { name: expected.CheckView }).getByRole('button').nth(1).click();
+    await page.getByRole('row', { name: expected.CheckView }).locator('#dyn_row_action').click();
+    await page.getByRole('menuitem', { name: 'View' }).click();
     return;
   }
 
@@ -485,14 +486,21 @@ export function formatDate(date = new Date()) {
 export async function uploadFileWithLimitCheck(page: Page, filePath: string) {
   // Check current file count
   const currentFiles = page.locator('.filepond--item');
-  await page.waitForTimeout(5000);
+  await page.waitForTimeout(5000); // Reduced from 5000
   const initialFileCount = await currentFiles.count();
   console.log(`Initial file count: ${initialFileCount}`);
 
   let expectedCountBeforeUpload = initialFileCount;
+  let removedFileName: string | undefined = undefined;
 
   if (initialFileCount >= 10) {
     console.log('File limit reached (10 files). Removing one file before upload...');
+
+    // Identify the file to be removed (first file)
+    const firstItem = currentFiles.first();
+    removedFileName = await firstItem.locator('.filepond--file-info-main').textContent().then(t => t?.trim());
+    console.log(`Removing file: ${removedFileName}`);
+
     // Remove the first file
     await page.locator('.filepond--action-remove-item').first().click();
 
@@ -511,16 +519,24 @@ export async function uploadFileWithLimitCheck(page: Page, filePath: string) {
   await page.setInputFiles('input[type="file"]', [filePath]);
 
   // Wait for the file count to increase (this confirms upload)
-  await expect(currentFiles).toHaveCount(expectedCountBeforeUpload + 1);
-  console.log(`File count increased to: ${expectedCountBeforeUpload + 1}`);
+  const expectedFinalCount = expectedCountBeforeUpload + 1;
+  await expect(currentFiles).toHaveCount(expectedFinalCount);
+  console.log(`File count increased to: ${expectedFinalCount}`);
 
   // Wait for upload to potentially finish (FilePond might be processing)
-  await page.waitForTimeout(5000);
+  await page.waitForTimeout(3000);
 
   // Verify the file is present in the list after update
   const uploadedFileNames = await page.locator('.filepond--file-info-main').allTextContents();
   console.log('Uploaded files found:', uploadedFileNames);
 
+  const fileName = filePath.split(/[/\\]/).pop(); // Simple check to get basename
+  if (fileName) {
+    expect(uploadedFileNames).toContain(fileName);
+    console.log(`Verified that '${fileName}' exists in the file list.`);
+  }
+
+  // Debug if empty
   if (uploadedFileNames.length === 0) {
     const firstItem = page.locator('.filepond--item').first();
     if (await firstItem.isVisible()) {
@@ -529,4 +545,14 @@ export async function uploadFileWithLimitCheck(page: Page, filePath: string) {
       console.log('No filepond items visible.');
     }
   }
+
+  return { fileName, finalCount: expectedFinalCount, removedFileName };
 }
+
+
+
+
+
+
+
+

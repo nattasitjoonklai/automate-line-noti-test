@@ -14,6 +14,16 @@ if (!GITHUB_OWNER || !GITHUB_REPO || !GITHUB_PAT) {
 }
 
 const server = http.createServer((req, res) => {
+    // Global Request Logging
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    console.log('Headers:', JSON.stringify(req.headers));
+
+    if (req.method === 'GET' && req.url === '/') {
+        res.writeHead(200);
+        res.end('Webhook Server is Running');
+        return;
+    }
+
     if (req.method === 'POST' && req.url === '/webhook') {
         let body = '';
         req.on('data', chunk => {
