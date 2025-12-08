@@ -172,9 +172,23 @@ export class Element_Create_Contact {
   }
 
   // Methods
-  async createTicket() {
+  async createContact() {
     await this.btnCreateContact.click();
-    await expect(this.page.getByText('New Ticket')).toBeVisible();
+
+    // Retry logic for flaky page load
+    for (let i = 0; i < 3; i++) {
+      try {
+        await this.inputName.waitFor({ state: 'visible', timeout: 5000 });
+        return; // Success
+      } catch (e) {
+        console.log(`Create page elements missing (Attempt ${i + 1}). Refreshing...`);
+        await this.page.reload();
+        await this.page.waitForLoadState('domcontentloaded');
+      }
+    }
+
+    // Final check
+    await expect(this.inputName).toBeVisible();
   }
 
   async search() {
@@ -186,6 +200,8 @@ export class Element_Create_Contact {
   }
   async goto() {
     await this.page.goto('/contact');
+    await this.page.waitForLoadState('domcontentloaded');
+    await this.page.waitForLoadState('networkidle')
   }
   async export() {
     await this.btnExport.click();

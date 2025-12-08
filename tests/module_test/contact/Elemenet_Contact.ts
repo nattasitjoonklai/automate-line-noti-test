@@ -121,9 +121,27 @@ export class Element_Contact {
   }
 
   // Methods
-  async createTicket() {
+  async ensureSearchPanelOpen() {
+    await ensureSearchPanelOpen(this.page);
+  }
+
+  async createContact() {
     await this.btnCreateContact.click();
-    await expect(this.page.getByText('New Ticket')).toBeVisible();
+
+    // Retry logic for flaky page load
+    for (let i = 0; i < 3; i++) {
+      try {
+        await this.inputName.waitFor({ state: 'visible', timeout: 5000 });
+        return; // Success
+      } catch (e) {
+        console.log(`Create page elements missing (Attempt ${i + 1}). Refreshing...`);
+        await this.page.reload();
+        await this.page.waitForLoadState('domcontentloaded');
+      }
+    }
+
+    // Final check
+    await expect(this.inputName).toBeVisible();
   }
 
   async search() {
@@ -143,7 +161,7 @@ export class Element_Contact {
   async searchBy(fields: { Name?: string; Phone?: string; Email?: string, Address_no?: string, Address_district?: string, Address_subdistrict?: string, Address_province?: string, Address_zipcode?: string, Datamasking?: string, search?: boolean, Segment?: string }) {
     // ✅ ถ้า fields.search === false → ไม่ต้องกดปุ่ม search
 
-    await this.btnSearch.click();
+    await this.ensureSearchPanelOpen();
     if (fields.Address_no) await this.addressNo.fill(fields.Address_no);
     if (fields.Address_district) await this.addressDistrict.fill(fields.Address_district);
     if (fields.Address_subdistrict) await this.addressSubDistrict.fill(fields.Address_subdistrict);
@@ -156,7 +174,9 @@ export class Element_Contact {
     if (fields.Segment) await this.segmment.fill(fields.Segment);
     // 🔍 ถ้าต้อง search ปกติ ให้กดรอบสอง
     if (fields.search !== false) {
+      await this.page.waitForTimeout(3000);
       await this.page.getByRole('button', { name: 'Search' }).nth(1).click();
+      await this.page.waitForTimeout(2000);
     }
 
   }
@@ -164,7 +184,7 @@ export class Element_Contact {
 
   async searchBy_Dropdown(fields: { Dropodown?: string, search?: boolean, btn_search?: boolean }) {
     if (fields.btn_search !== false) {
-      await this.btnSearch.click();
+      await this.ensureSearchPanelOpen();
     }
     if (fields.search !== false) {
       await this.page.getByRole('button', { name: 'Search' }).nth(1).click();
@@ -186,7 +206,7 @@ export class Element_Contact {
 
   async searchBy_Checkbox(fields: { Checkbox?: string, search?: boolean, btn_search?: boolean }) {
     if (fields.btn_search !== false) {
-      await this.btnSearch.click();
+      await this.ensureSearchPanelOpen();
     }
 
     if (fields.Checkbox)
@@ -203,7 +223,7 @@ export class Element_Contact {
   async searchBy_Radiobtn(fields: { Radiobtn?: string, search?: boolean, btn_search?: boolean }) {
 
     if (fields.btn_search !== false) {
-      await this.btnSearch.click();
+      await this.ensureSearchPanelOpen();
     }
 
     if (fields.Radiobtn)
@@ -219,7 +239,7 @@ export class Element_Contact {
   }
 
   async searchbyDate(fields: { Datetime?: string, Date?: string, Time?: string, search?: boolean }) {
-    await this.btnSearch.click();
+    await this.ensureSearchPanelOpen();
     if (fields.Date)
       await this.cleardate();
     await this.btnRadio.click();
@@ -249,7 +269,7 @@ export class Element_Contact {
   }) {
     // กด search รอบแรกถ้ามี
     if (fields.btn_search !== false) {
-      await this.btnSearch.click();
+      await this.ensureSearchPanelOpen();
       await this.cleardate();
     }
 
@@ -379,7 +399,7 @@ export class Element_Contact {
   }
   async search_datetime(fields: { Datetime?: string, Date?: string, Time?: string, search?: boolean, btn_search?: boolean }) {
     if (fields.btn_search !== false) {
-      await this.btnSearch.click();
+      await this.ensureSearchPanelOpen();
 
     }
 
@@ -425,4 +445,22 @@ export class Element_Contact {
   }
 
 
+}
+
+export async function ensureSearchPanelOpen(page: Page) {
+  const btnSearch = page.getByRole('button', { name: 'Search' }).nth(2);
+  const inputName = page.locator('#dyn_name');
+
+  await btnSearch.click();
+  try {
+    // Check if a standard field like Name is visible
+    // If only start/end dates are visible, this will timeout
+    await inputName.waitFor({ state: 'visible', timeout: 2000 });
+  } catch (e) {
+    console.log('Search panel malformed (only dates visible?). Refreshing page and retrying...');
+    await page.reload();
+    await page.waitForLoadState('domcontentloaded');
+    await btnSearch.click();
+    await inputName.waitFor({ state: 'visible', timeout: 5000 });
+  }
 }

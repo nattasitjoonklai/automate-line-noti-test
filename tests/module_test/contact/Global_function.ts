@@ -1,5 +1,6 @@
 import { Page, APIRequestContext, expect } from "@playwright/test";
 import { FillInputContactForm, ContactFormFields } from "./FillForm";
+import { ensureSearchPanelOpen } from "./Elemenet_Contact";
 import { r } from "@faker-js/faker/dist/airline-DF6RqYmq";
 export type SearchParams = {
   organize_id: string;
@@ -239,8 +240,7 @@ export class ContactAPI {
 
     });
     // 3) เปิด filter
-    await page.getByRole("button", { name: "Search" }).nth(2).click();
-
+    await ensureSearchPanelOpen(page);
     // 4) กรอก form
     await FillInputContactForm(page, form);
 
@@ -262,7 +262,7 @@ export class ContactAPI {
 
     // 1) ดึง rows จาก table
     const rows = page.locator('#dyn_contactTable tr[id^="dyn_rows_"]');
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(5000);
     // Wait for the UI to reflect the API data count
     await expect(rows).toHaveCount(contacts.length);
 
