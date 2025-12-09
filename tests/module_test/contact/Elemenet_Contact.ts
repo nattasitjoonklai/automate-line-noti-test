@@ -153,6 +153,10 @@ export class Element_Contact {
   }
   async goto() {
     await this.page.goto('/contact');
+    await this.page.waitForURL('/contact');
+    await this.page.waitForLoadState('domcontentloaded');
+    await this.page.waitForLoadState('networkidle');
+    console.log('Navigated to /contact and page loaded completely.');
   }
   async export() {
     await this.btnExport.click();
@@ -174,9 +178,7 @@ export class Element_Contact {
     if (fields.Segment) await this.segmment.fill(fields.Segment);
     // 🔍 ถ้าต้อง search ปกติ ให้กดรอบสอง
     if (fields.search !== false) {
-      await this.page.waitForTimeout(3000);
       await this.page.getByRole('button', { name: 'Search' }).nth(1).click();
-      await this.page.waitForTimeout(2000);
     }
 
   }
@@ -201,7 +203,7 @@ export class Element_Contact {
     } else {
 
     }
-    await this.page.waitForTimeout(3000)
+    // await this.page.waitForTimeout(3000)
   }
 
   async searchBy_Checkbox(fields: { Checkbox?: string, search?: boolean, btn_search?: boolean }) {
@@ -217,7 +219,7 @@ export class Element_Contact {
       await this.page.getByRole('button', { name: 'Search' }).nth(1).click();
     }
 
-    await this.page.waitForTimeout(3000)
+    // await this.page.waitForTimeout(3000)
   }
 
   async searchBy_Radiobtn(fields: { Radiobtn?: string, search?: boolean, btn_search?: boolean }) {
@@ -235,7 +237,7 @@ export class Element_Contact {
     }
     // กด search รอบสอง
 
-    await this.page.waitForTimeout(3000)
+    // await this.page.waitForTimeout(3000)
   }
 
   async searchbyDate(fields: { Datetime?: string, Date?: string, Time?: string, search?: boolean }) {
@@ -255,7 +257,7 @@ export class Element_Contact {
     }
     // กด search รอบสอง
 
-    await this.page.waitForTimeout(3000)
+    // await this.page.waitForTimeout(3000)
   }
   async searchByMultipleDropdown(fields: {
     search?: boolean;
@@ -313,7 +315,7 @@ export class Element_Contact {
           break;
         } catch (e) {
           console.log(`Option ${value} not visible yet, retrying...`);
-          await this.page.waitForTimeout(500); // รอสั้น ๆ ก่อน retry
+          // await this.page.waitForTimeout(500); // รอสั้น ๆ ก่อน retry
         }
       }
 
@@ -322,7 +324,8 @@ export class Element_Contact {
       }
 
       await optionLocator.click();
-      await this.page.waitForTimeout(1000)
+      // Wait for the selection to trigger updates (e.g. loading next dropdown)
+      await this.page.waitForTimeout(500);
     }
 
     // กด search รอบสอง

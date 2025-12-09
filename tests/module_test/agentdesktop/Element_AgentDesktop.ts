@@ -31,6 +31,7 @@ export class Element_AgentDesktop {
     readonly btnImportCSV: Locator;
 
     // Search Elements
+    readonly btnSearchIcon: Locator;
     readonly selectSearchType: Locator;
     readonly inputSearch: Locator;
 
@@ -107,20 +108,25 @@ export class Element_AgentDesktop {
         this.statusBreak = page.locator('[data-test="status-break"]');
         this.statusAcd = page.locator('[data-test="status-acd"]');
 
-        // Channel Filter Tabs - จาก HTML ที่ให้มา
-        this.tabAll = page.locator('button[id*="tab_x,phone,line,facebook"]');
-        this.tabPhone = page.locator('button[id*="tab_phone"]');
-        this.tabLine = page.locator('button[id*="tab_line"]');
-        this.tabEmail = page.locator('button[id*="tab_email"]');
-        this.tabFacebook = page.locator('button[id*="tab_facebook"]');
-        this.tabTask = page.locator('button[id*="tab_task"]');
-        this.tabInstagram = page.locator('button[id*="tab_instagram"]');
-        this.tabTelegram = page.locator('button[id*="tab_telegram"]');
-        this.tabLazada = page.locator('button[id*="tab_lazada"]');
+        // Channel Filter Tabs - Updated to match current DOM
+        // Using class selector for container and text for specific tabs if available, or generic check in Global_function
+        // These specific locators might not be used if we use the generic verification in Global_function
+        this.tabAll = page.locator('.flex-wrap').getByText('all', { exact: true });
+        // For other tabs without text, we might need to rely on index or other attributes if available
+        // Placeholder locators for now
+        this.tabPhone = page.locator('.flex-wrap > div').nth(1);
+        this.tabLine = page.locator('.flex-wrap > div').nth(2);
+        this.tabEmail = page.locator('.flex-wrap > div').nth(3);
+        this.tabFacebook = page.locator('.flex-wrap > div').nth(4);
+        this.tabTask = page.locator('.flex-wrap > div').nth(5);
+        this.tabInstagram = page.locator('.flex-wrap > div').nth(6);
+        this.tabTelegram = page.locator('.flex-wrap > div').nth(7);
+        this.tabLazada = page.locator('.flex-wrap > div').nth(8);
 
         // Action Buttons
         this.btnCreateTicket = page.locator('button#create-ticket-button');
-        this.btnImportCSV = page.locator('button#btn-import-csv');
+        // Fix duplicate ID issue by using child element class
+        this.btnImportCSV = page.locator('button#btn-import-csv:has(.lucide-upload-icon)');
 
         // Create Ticket Menu
         this.menuExistingContact = page.getByText('Existing Contact');
@@ -132,15 +138,36 @@ export class Element_AgentDesktop {
         this.btnSelectContact = this.modalSearchContact.locator('button').filter({ hasText: 'Select' });
 
         // Search Elements
+        // Search Icon Button (to toggle search options)
+        // Try multiple selectors for the search icon
+        this.btnSearchIcon = page.locator('#btn-import-csv').nth(1);
+
         this.selectSearchType = page.locator('#select-task-search');
         this.inputSearch = page.locator('input[placeholder="Search"]').first();
 
-        // Task Type Tabs
-        this.tabMyTask = page.locator('#tab-task-my-task');
-        this.tabPending = page.locator('#tab-task-pending');
-        this.tabGuest = page.locator('#tab-task-guest');
-        this.tabGroup = page.locator('#tab-task-group');
-        this.tabAllTasks = page.locator('#tab-task-all');
+        // Task Type Tabs - Updated to use class and text
+        this.tabMyTask = page.locator('.task-tab-item').filter({ hasText: 'My Task' });
+        this.tabGroup = page.locator('.task-tab-item').filter({ hasText: 'Group' });
+        this.tabAllTasks = page.locator('.task-tab-item').filter({ hasText: 'All' });
+
+        // Task List
+        this.taskContainer = page.locator('#mytask-wrapper');
+        this.taskItems = page.locator('[id^="mytask-wrapper"] > div > div');
+
+        // Ticket Detail Tabs
+        this.tabContact = page.locator('#tab-task-component-contact');
+        this.tabTicket = page.locator('[aria-label="Ticket"]');
+        this.tabOmnichannel = page.locator('[aria-label="Omnichannel"]');
+        this.tabEmailDetail = page.locator('[aria-label="Email"]');
+        this.tabSMS = page.locator('[aria-label="SMS"]');
+        this.tabAppointment = page.locator('[aria-label="Appointment"]');
+        this.tabTicketHistory = page.locator('[aria-label="Ticket History"]');
+        // Task Type Tabs - Updated to use class and text
+        this.tabMyTask = page.locator('.task-tab-item').filter({ hasText: 'My Task' });
+        this.tabPending = page.locator('.task-tab-item').filter({ hasText: 'Pending' });
+        this.tabGuest = page.locator('.task-tab-item').filter({ hasText: 'Guest' });
+        this.tabGroup = page.locator('.task-tab-item').filter({ hasText: 'Group' });
+        this.tabAllTasks = page.locator('.task-tab-item').filter({ hasText: 'All' });
 
         // Task List
         this.taskContainer = page.locator('#mytask-wrapper');
@@ -186,6 +213,35 @@ export class Element_AgentDesktop {
         this.btnSync = page.getByRole('button', { name: 'Sync' });
         this.inputNote = page.getByPlaceholder('note');
         this.btnSendNote = page.locator('#dyn_send_note');
+    }
+
+    async expandSearch() {
+        // If search options are already visible, do nothing
+        if (await this.selectSearchType.isVisible()) {
+            return;
+        }
+
+        // Click search icon to expand
+        if (await this.btnSearchIcon.isVisible()) {
+            await this.btnSearchIcon.click();
+            await this.selectSearchType.waitFor({ state: 'visible' });
+        } else {
+            console.log('⚠️ Search icon not found or not visible');
+        }
+    }
+
+    async verifySearchOptions() {
+        // Click to open the dropdown
+        await this.selectSearchType.click();
+
+        // Verify options exist
+        // Using getByRole 'option' is standard for accessible dropdowns
+        await expect(this.page.getByRole('option', { name: 'Name', exact: true })).toBeVisible();
+        await expect(this.page.getByRole('option', { name: 'Phone', exact: true })).toBeVisible();
+        await expect(this.page.getByRole('option', { name: 'Ticket No.', exact: true })).toBeVisible();
+
+        // Close the dropdown
+        await this.page.keyboard.press('Escape');
     }
 
     async createTicketExistingContact(contactName: string) {
@@ -410,7 +466,10 @@ export class Element_AgentDesktop {
         await tabMap[channel].click();
     }
 
+
+
     async searchTask(searchType: 'Name' | 'Phone' | 'Ticket No.', searchValue: string) {
+        await this.expandSearch();
         // Select search type
         await this.selectSearchType.click();
         await this.page.getByText(searchType, { exact: true }).last().click();

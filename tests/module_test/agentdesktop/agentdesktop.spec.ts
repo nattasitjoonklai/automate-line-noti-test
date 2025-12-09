@@ -8,8 +8,14 @@ import {
     verifySearchOptions,
     waitForTaskListLoad,
     verifyNotificationTabs,
-    verifyTicketDetailTabs
+    verifyTicketDetailTabs,
+    verifySearchWithAPI,
+    verifyDefaultTaskListWithAPI
 } from "./Global_function";
+
+// ... (existing imports and data_test)
+
+
 const data_test = {
     name: "TestData0",
     name_edt: "ทดสอบ AGTDT",
@@ -98,9 +104,10 @@ test.describe('Agent Desktop Tests', () => {
 
         // 6. Verify Search functionality
         // Search ค้นหา (Name, Phone, Ticket no.)
+        await agentDesktop.expandSearch();
         await expect(agentDesktop.selectSearchType).toBeVisible();
         await expect(agentDesktop.inputSearch).toBeVisible();
-        // await verifySearchOptions(page); // SKIPPED - need correct selector
+        await agentDesktop.verifySearchOptions();
         console.log('✅ Search elements found');
 
         // 7. Verify Task Type Menu
@@ -151,6 +158,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
 
         // 2. Select search Name, Phone, Ticket No.
+        await agentDesktop.expandSearch();
         const searchOptions = ['Name', 'Phone', 'Ticket No.'];
 
         for (const option of searchOptions) {
@@ -178,11 +186,14 @@ test.describe('Agent Desktop Tests', () => {
         if (taskCount > 0) {
             const taskData = await agentDesktop.getTaskData(0);
             const searchName = taskData.lines[0] || "Test Name";
-            await agentDesktop.searchTask('Name', searchName);
-            await page.waitForTimeout(1000);
-            expect(await agentDesktop.getTaskCount()).toBeGreaterThan(0);
-            console.log(`✅ Search by Name (${searchName}) returned results`);
-            await agentDesktop.clearSearch();
+
+            await verifySearchWithAPI(page, 'Name', searchName, async () => {
+                await agentDesktop.searchTask('Name', searchName);
+            });
+
+            await verifyDefaultTaskListWithAPI(page, async () => {
+                await agentDesktop.clearSearch();
+            });
         } else {
             console.log('⚠️ No tasks available to test search functionality');
         }
@@ -191,8 +202,8 @@ test.describe('Agent Desktop Tests', () => {
     test('CRM_AG00010 กรอกข้อมูลค้นหาด้วย (Phone)', async ({ page }) => {
         const agentDesktop = new Element_AgentDesktop(page);
 
-        // Setup response listener before navigating
-        const responsePromise = page.waitForResponse(response =>
+        // Setup response listener to find a phone number first
+        const initialResponsePromise = page.waitForResponse(response =>
             response.url().includes('/api/tasks/mytask') && response.status() === 200
         );
 
@@ -200,11 +211,9 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
 
         // Wait for the response and get data
-        const response = await responsePromise;
-        const responseBody = await response.json();
-
-        // Parse data based on provided structure: { data: { data: [...] } }
-        const tasks = responseBody.data?.data;
+        const initialResponse = await initialResponsePromise;
+        const initialResponseBody = await initialResponse.json();
+        const tasks = initialResponseBody.data?.data;
 
         if (tasks && tasks.length > 0) {
             // Find a task with a phone number in c_phone array
@@ -215,16 +224,13 @@ test.describe('Agent Desktop Tests', () => {
                 const searchPhone = taskWithPhone.c_phone[0];
                 console.log(`Found phone from API: ${searchPhone}`);
 
-                await agentDesktop.searchTask('Phone', searchPhone);
-                await page.waitForTimeout(3000); // Increase wait time
+                await verifySearchWithAPI(page, 'Phone', searchPhone, async () => {
+                    await agentDesktop.searchTask('Phone', searchPhone);
+                });
 
-                // Debug: Check if search input has value
-                const inputValue = await agentDesktop.inputSearch.inputValue();
-                console.log(`Search input value: ${inputValue}`);
-
-                expect(await agentDesktop.getTaskCount()).toBeGreaterThan(0);
-                console.log(`✅ Search by Phone (${searchPhone}) returned results`);
-                await agentDesktop.clearSearch();
+                await verifyDefaultTaskListWithAPI(page, async () => {
+                    await agentDesktop.clearSearch();
+                });
             } else {
                 console.log('⚠️ No task with phone number found in API response');
             }
@@ -242,13 +248,17 @@ test.describe('Agent Desktop Tests', () => {
         if (taskCount > 0) {
             const taskData = await agentDesktop.getTaskData(0);
             const ticketMatch = taskData.fullText.match(/[A-Z0-9]{5,}/);
+
             if (ticketMatch) {
                 const searchTicket = ticketMatch[0];
-                await agentDesktop.searchTask('Ticket No.', searchTicket);
-                await page.waitForTimeout(1000);
-                expect(await agentDesktop.getTaskCount()).toBeGreaterThan(0);
-                console.log(`✅ Search by Ticket No (${searchTicket}) returned results`);
-                await agentDesktop.clearSearch();
+
+                await verifySearchWithAPI(page, 'Ticket No.', searchTicket, async () => {
+                    await agentDesktop.searchTask('Ticket No.', searchTicket);
+                });
+
+                await verifyDefaultTaskListWithAPI(page, async () => {
+                    await agentDesktop.clearSearch();
+                });
             } else {
                 console.log('⚠️ Could not find a ticket number to test search');
             }

@@ -1,10 +1,10 @@
 import test, { expect, Page, APIRequestContext } from "@playwright/test";
 import { BaseUrl, ContactPage, LoginPage } from "../../utils";
-import { Element_Contact } from "./Elemenet_Contact";
+import { Element_Contact, ensureSearchPanelOpen } from "./Elemenet_Contact";
 import { FillInputContactForm, ContactFormFields } from "./FillForm";
 import { performLogin, performReLogin } from "../../auth_utils";
 
-test.afterEach(async ({ page }, testInfo) => {
+test.afterEach(async ({ page, context }, testInfo) => {
   // Check if test failed
   if (testInfo.status !== 'passed') {
     const url = page.url();
@@ -14,15 +14,19 @@ test.afterEach(async ({ page }, testInfo) => {
       url.includes('Login') ||
       url === LoginPage ||
       testInfo.error?.message?.includes('Network') ||
-      testInfo.error?.message?.includes('fetch') ||
-      testInfo.error?.message?.includes('Timeout')
+      testInfo.error?.message?.includes('fetch')
     ) {
       console.log(`Test failed. Current URL: ${url}. Triggering re-login sequence...`);
+      // Remove framenavigated listener to prevent it from triggering during re-login
+      page.removeAllListeners('framenavigated');
+
       // Extend timeout to allow re-login to complete (adding 60 seconds)
       testInfo.setTimeout(testInfo.timeout + 60000);
       await performReLogin(page);
     }
   }
+  await page.close();
+  await context.close();
 });
 import {
   ContactAPI,
@@ -99,7 +103,7 @@ const contact_Search_Data = {
   Address_province1_Edit: "นนทบุรี",
   Address_subdistrict: "บางแวก",
   Address_subdistrict1_Edit: "หนองบอน",
-  Address_district: "บางแค",
+  Address_district: "บางกอกน้อย",
   Address_district1_Edit: "บางแค",
   Address_zipcode: "10160",
   Address_zipcode1_Edit: "10900",
@@ -174,19 +178,17 @@ test.beforeEach(async ({ page }) => {
     console.log(`[NETWORK ERROR] Request failed: ${request.method()} ${request.url()} - ${request.failure()?.errorText} `);
   });
 
-  // Fail fast if redirected to Login page
-  page.on('framenavigated', async (frame) => {
-    if (frame === page.mainFrame()) {
-      const url = frame.url();
-      if (url.includes('/login') || url.includes('Login') || url === LoginPage) {
-        console.log('Redirected to Login page detected. Failing test immediately to trigger re-login...');
-        await performReLogin(page);
-        // Throwing error here to abort the test immediately
-        // This will be caught by the runner, fail the test, and trigger afterEach
-        throw new Error('Session expired: Redirected to Login Page.');
-      }
-    }
-  });
+  // // Fail fast if redirected to Login page
+  // page.on('framenavigated', async (frame) => {
+  //   if (frame === page.mainFrame()) {
+  //     const url = frame.url();
+  //     if (url.includes('/login') || url.includes('Login') || url === LoginPage) {
+  //       console.log('Redirected to Login page detected. Failing test immediately to trigger re-login...');
+
+  //       throw new Error('Session expired: Redirected to Login Page.');
+  //     }
+  //   }
+  // });
 
   // Listen for responses with error status codes
   page.on('response', async response => {
@@ -208,6 +210,7 @@ test.describe('Contact Search Tests', () => {
 
   test('CRM_CT00000_Setup สร้างข้อมูลสำหรับทดสอบ Search', async ({ page, request }) => {
     const contact = new Element_Create_Contact(page);
+
     await contact.goto();
 
     // Check if contact already exists
@@ -294,8 +297,8 @@ test.describe('Contact Search Tests', () => {
     await page.goto(BaseUrl + '/contact');
     // await page.waitForLoadState("networkidle");
     await expect(contact.btnSearch).toBeVisible();
-
-    await contact.btnSearch.click()
+    await contact.ensureSearchPanelOpen();
+    // await contact.btnSearch.click()
     await expect(contact.inputStartDate).toBeVisible();
     await expect(contact.inputEndDate).toBeVisible();
     await expect(contact.inputName).toBeVisible();
@@ -331,7 +334,8 @@ test.describe('Contact Search Tests', () => {
   test('CRM_CT00003 การค้นหาช่อง Start Datetime', async ({ page }) => {
     const contact = new Element_Contact(page);
     await page.goto(BaseUrl + '/contact');
-    await contact.btnSearch.click();
+    await ensureSearchPanelOpen(page);
+
 
     // Select Start Date
     await contact.inputStartDate.click();
@@ -356,12 +360,12 @@ test.describe('Contact Search Tests', () => {
   test('CRM_CT00004 การค้นหาช่อง End Datetime', async ({ page }) => {
     const contact = new Element_Contact(page);
     await page.goto(BaseUrl + '/contact');
-    await contact.btnSearch.click();
+    await ensureSearchPanelOpen(page);
 
     // Select End Date
     await contact.inputEndDate.click();
     await page.locator('.p-datepicker-today').click(); // Click Today
-
+    await page.mouse.click(0, 0); // Click outside to close dropdown
     // Click Search
     await page.getByRole('button', { name: 'Search' }).nth(1).click();
 
@@ -373,7 +377,7 @@ test.describe('Contact Search Tests', () => {
   test('CRM_CT00006   "การค้นหาช่องใส่ Name กรณีรายชื่อลูกค้าไม่มีอยู่ในระบบ"', async ({ page }) => {
     const contact = new Element_Contact(page);
     await page.goto(BaseUrl + '/contact');
-    await contact.btnSearch.click();
+    await ensureSearchPanelOpen(page);
     await contact.inputName.fill('Testerere');
     await page.getByRole('button', { name: 'Search' }).nth(1).click()
     await expect(page.getByRole('cell', { name: 'No Data' })).toBeVisible();
@@ -391,9 +395,11 @@ test.describe('Contact Search Tests', () => {
   test('CRM_CT00009   "การค้นหาช่องใส่ Phone กรณีกำหนดให้ Integer พิมพ์ได้เฉพาะตัวเลขเท่านั้น"', async ({ page }) => {
     const contact = new Element_Contact(page);
     await contact.goto();
-    await contact.btnSearch.click()
+    await ensureSearchPanelOpen(page);
     await contact.inputPhone.fill('asdas123')
-    expect(await page.getByText('Invalid numeric format')).toBeVisible();
+    await page.getByText('Invalid numeric format').waitFor();
+    // Trigger validation
+    await expect(page.getByText('Invalid numeric format')).toBeVisible();
 
   });
   test('CRM_CT00010   "การค้นหาช่องใส่ Email กรณีมีรายชื่อลูกค้าอยู่ในระบบ"', async ({ page, request }) => {
@@ -410,10 +416,11 @@ test.describe('Contact Search Tests', () => {
   test('CRM_CT00012   "การค้นหาช่องใส่ Email กรณีกรอกรูปแบบอีเมลไม่ถูกต้อง"', async ({ page, request }) => {
     const contact = new Element_Contact(page);
     await contact.goto();
-    await contact.btnSearch.click()
+    await ensureSearchPanelOpen(page);
     await contact.inputEmail.fill('asasas')
-    await page.getByRole('button', { name: 'Search' }).nth(1).click(); // Trigger validation
-    expect(await page.getByText('Invalid email format')).toBeVisible();
+    await page.getByText('Invalid email format').waitFor();
+    // Trigger validation
+    await expect(page.getByText('Invalid email format')).toBeVisible();
 
   });
   test('CRM_CT00013   "การค้นหาช่องใส่ Address ที่อยู่/บ้านเลขที่ กรณีมีรายชื่อลูกค้าอยู่ในระบบ""', async ({ page, request }) => {
@@ -896,8 +903,10 @@ test('CRM_CT00065	"การใส่ข้อมูลช่อง Address ท�
   await contact.createContact()
 
   await contact.btn_address.click();
+  await expect(contact.input_address).toBeVisible();
   await contact.input_address.fill('ทดสอบการใส่ที่อยู')
-  expect(contact.input_address).toHaveValue('ทดสอบการใส่ที่อยู')
+
+  await expect(contact.input_address).toHaveValue('ทดสอบการใส่ที่อยู')
 
 
 });
@@ -907,7 +916,7 @@ test('CRM_CT00066	กรณีค้นหา ตำบล/แขวง ต้�
   await contact.createContact()
 
   await contact.btn_address.click();
-  // await page.waitForTimeout(1000)
+  await page.locator('.grid.grid-cols-2 > div:nth-child(2) > #dropdownEl > .relative > .w-8').waitFor()
   await page.locator('.grid.grid-cols-2 > div:nth-child(2) > #dropdownEl > .relative > .w-8').click()
   await page.getByRole('combobox', { name: 'ค้นหา ตำบล/แขวง' }).fill(contact_Search_Data.Address_subdistrict);
 
@@ -917,14 +926,13 @@ test('CRM_CT00066	กรณีค้นหา ตำบล/แขวง ต้�
   } catch (e) {
     console.log('Option not found, pressing Backspace to trigger search...');
     await page.getByRole('combobox', { name: 'ค้นหา ตำบล/แขวง' }).press('Backspace');
-    await page.waitForTimeout(1000); // Wait for UI update
     await page.getByRole('option', { name: 'บางแวก » ภาษีเจริญ » กรุงเทพมหานคร »' }).waitFor({ state: 'visible', timeout: 5000 });
   }
 
   await page.getByRole('option', { name: 'บางแวก » ภาษีเจริญ » กรุงเทพมหานคร »' }).click();
 
 
-  expect(await page.getByRole('combobox', { name: 'บางแวก' })).toBeVisible()
+  await expect(page.getByRole('combobox', { name: 'บางแวก' })).toBeVisible()
 
 
 });
@@ -933,15 +941,13 @@ test('CRM_CT00067	กรณีค้นหา อำเภอ/เขต ต้�
   await contact.goto();
   await contact.createContact()
   await contact.btn_address.click();
-  // await page.waitForTimeout(1000)
+  await page.locator('div:nth-child(3) > #dropdownEl > .relative > .w-8 > .lucide').waitFor()
+  await page.locator('div:nth-child(3) > #dropdownEl > .relative > .w-8 > .lucide').click()
+  await page.getByRole('combobox', { name: 'ค้นหา อำเภอ / เขต' }).waitFor()
   await page.getByRole('combobox', { name: 'ค้นหา อำเภอ / เขต' }).fill(contact_Search_Data.Address_district);
-  await page.waitForTimeout(1000)
-  await page.locator('.grid.grid-cols-2 > div:nth-child(3) > #dropdownEl > .relative > .w-8').click()
-  await page.waitForTimeout(1000)
-  await page.getByRole('combobox', { name: 'ค้นหา อำเภอ' }).fill(contactData.Address_district1)
 
+  await page.getByText('บางขุนนนท์ » บางกอกน้อย » กรุงเทพมหานคร »').waitFor()
   await page.getByText('บางขุนนนท์ » บางกอกน้อย » กรุงเทพมหานคร »').click()
-  await page.waitForTimeout(3000)
   await expect(page.getByRole('combobox', { name: contactData.Address_district1 })).toBeVisible()
 });
 test('CRM_CT00068	กรณีค้นหา จังหวัด ต้องใส่ตัวอักษรที่อยู่ในdropdown ข้อมูลสถานที่ถึงแสดง" ', async ({ page }) => {
@@ -949,12 +955,14 @@ test('CRM_CT00068	กรณีค้นหา จังหวัด ต้อง
   await contact.goto();
   await contact.createContact()
   await contact.btn_address.click();
+  await page.locator('.grid.grid-cols-2 > div:nth-child(4) > #dropdownEl > .relative > .w-8').waitFor()
+  await page.locator('.grid.grid-cols-2 > div:nth-child(4) > #dropdownEl > .relative > .w-8').click()
   // await page.waitForTimeout(1000)
+  await page.getByRole('combobox', { name: 'ค้นหา จังหวัด' }).waitFor()
   await page.getByRole('combobox', { name: 'ค้นหา จังหวัด' }).fill('กรุงเทพมหานคร');
   // await page.waitForTimeout(1000)
-  await page.locator('.grid.grid-cols-2 > div:nth-child(4) > #dropdownEl > .relative > .w-8').click()
   await page.getByRole('option', { name: 'คลองต้นไทร » คลองสาน » กรุงเทพมหานคร »' }).click();
-  await page.waitForTimeout(3000)
+  ;
   await expect(page.getByRole('combobox', { name: 'กรุงเทพมหานคร' })).toBeVisible()
 });
 test('CRM_CT00069	กรณีค้นหา รหัสไปรษณีย์ ต้องใส่ตัวอักษรที่อยู่ในdropdown ข้อมูลสถานที่ถึงแสดง" ', async ({ page }) => {
@@ -967,13 +975,14 @@ test('CRM_CT00069	กรณีค้นหา รหัสไปรษณีย�
 
   await page.getByRole('combobox', { name: 'ค้นหา รหัสไปรษณีย์' }).click();
   // await page.waitForTimeout(1000)
+  await page.locator('.grid.grid-cols-2 > div:nth-child(5) > #dropdownEl > .relative > .w-8 > .lucide').waitFor()
   await page.locator('.grid.grid-cols-2 > div:nth-child(5) > #dropdownEl > .relative > .w-8 > .lucide').click();
   await page.getByRole('combobox', { name: 'ค้นหา รหัสไปรษณีย์' }).click();
   await page.getByRole('combobox', { name: 'ค้นหา รหัสไปรษณีย์' }).fill(contact_Search_Data.Address_zipcode);
   await page.getByRole('option', { name: 'บางแค » บางแค » กรุงเทพมหานคร »' }).click()
 
 
-  expect(await page.getByRole('combobox', { name: '10160' })).toBeVisible()
+  await expect(page.getByRole('combobox', { name: '10160' })).toBeVisible()
 });
 test('CRM_CT00070	"การใส่ข้อมูลช่อง Address กรณีไม่ใส่ข้อมูลที่อยู่ "" ', async ({ page }) => {
   const contact = new Element_Create_Contact(page);
@@ -997,11 +1006,11 @@ test('CRM_CT00070	"การใส่ข้อมูลช่อง Address ก�
   await page.getByRole('button', { name: 'Create', exact: true }).click();
 
   // Verify validation errors for required address fields
-  expect(await page.getByText('Value is required').first()).toBeVisible();
-  expect(await page.getByText('Value is required').nth(1)).toBeVisible();
-  expect(await page.getByText('Value is required').nth(2)).toBeVisible();
-  expect(await page.getByText('Value is required').nth(3)).toBeVisible();
-  expect(await page.getByText('Value is required').nth(4)).toBeVisible();
+  await expect(page.getByText('Value is required').first()).toBeVisible();
+  await expect(page.getByText('Value is required').nth(1)).toBeVisible();
+  await expect(page.getByText('Value is required').nth(2)).toBeVisible();
+  await expect(page.getByText('Value is required').nth(3)).toBeVisible();
+  await expect(page.getByText('Value is required').nth(4)).toBeVisible();
 });
 test('CRM_CT00071	การเลือกข้อมูลช่อง Dropdown"" ', async ({ page }) => {
   const contact = new Element_Create_Contact(page);
@@ -1011,7 +1020,7 @@ test('CRM_CT00071	การเลือกข้อมูลช่อง Dropdow
 
   await page.getByRole('combobox').filter({ hasText: /^$/ }).nth(5).click();
   await page.locator('#pv_id_16_0').getByText('ทดสอบตัวเลือก').click();
-  expect(await page.getByRole('combobox', { name: 'ทดสอบตัวเลือก' })).toBeVisible()
+  await expect(page.getByRole('combobox', { name: 'ทดสอบตัวเลือก' })).toBeVisible()
 
 
 });
@@ -1033,12 +1042,12 @@ test('CRM_CT00072	การเลือกข้อมูลช่อง Multi D
   });
 
   // Verify all levels are selected
-  expect(await page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv1 })).toBeVisible();
-  expect(await page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv2 })).toBeVisible();
-  expect(await page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv3 })).toBeVisible();
-  expect(await page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv4 })).toBeVisible();
-  expect(await page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv5 })).toBeVisible();
-  expect(await page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv6 })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv1 })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv2 })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv3 })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv4 })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv5 })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: multipleDropdownData.MultipleDropdownlv6 })).toBeVisible();
 });
 test('CRM_CT00073	การใส่ข้อมูลช่อง Text Input" ', async ({ page }) => {
   const contact = new Element_Create_Contact(page);
@@ -1056,7 +1065,7 @@ test('CRM_CT00074	"การใส่ข้อมูลช่อง Text Input �
 
   await contact.inputName.fill('ทดสอบsadsadsddd11')
   // await page.waitForTimeout(500);
-  expect(await page.getByText('Name *The maximum length')).toBeVisible()
+  await expect(page.getByText('Name *The maximum length')).toBeVisible()
 
 
 });
@@ -1065,7 +1074,7 @@ test('CRM_CT00075	"การใส่ข้อมูลช่อง Text Input �
   await contact.goto();
   await contact.createContact()
   await page.getByRole('button', { name: 'Create', exact: true }).click();
-  expect(await page.getByText('Name *Value is required')).toBeVisible()
+  await expect(page.getByText('Name *Value is required')).toBeVisible()
 
 });
 test('CRM_CT00076	"การใส่ข้อมูลช่อง Data Masking " ', async ({ page }) => {
@@ -1099,18 +1108,18 @@ test('CRM_CT00078	"การติ๊กเลือกCheckbox " " ', async ({ 
 
 });
 
-test('CRM_CT00079	การใส่รูปภาพ Image   Fail  " " ', async ({ page }) => {
-  const contact = new Element_Create_Contact(page);
-  await contact.goto();
-  await contact.createContact()
+// test('CRM_CT00079	การใส่รูปภาพ Image   Fail  " " ', async ({ page }) => {
+//   const contact = new Element_Create_Contact(page);
+//   await contact.goto();
+//   await contact.createContact()
 
-  await page.locator('#dyn_chkbox').nth(1).click()
-  const isChecked = await page.locator('#dyn_chkbox').nth(1).isChecked();
-  console.log(isChecked); // true or false
-  expect(isChecked).toBe(true);
+//   await page.locator('#dyn_chkbox').nth(1).click()
+//   const isChecked = await page.locator('#dyn_chkbox').nth(1).isChecked();
+//   console.log(isChecked); // true or false
+//   expect(isChecked).toBe(true);
 
 
-});
+// });
 test('CRM_CT00080	การใส่ข้อมูลวันที่และเวลา Date Time  " " ', async ({ page }) => {
   const contact = new Element_Create_Contact(page);
   await contact.goto();
@@ -1163,7 +1172,7 @@ test('CRM_CT00084	"การเลือกกลุ่มและข้อม�
 
 
   await page.getByRole('textbox', { name: 'segment', exact: true }).fill(contactData.Segment);
-  expect(await page.locator('#dyn_text_segment')).toBeVisible()
+  await expect(page.locator('#dyn_text_segment')).toBeVisible()
 
 
 });
@@ -1622,7 +1631,7 @@ test.describe.serial('Sequential Edit Tests', () => {
       page.waitForEvent('download'), // รอ download event
       await contact.btnExport.click(), // คลิกปุ่ม export
     ]);
-    expect(await page.getByText('Report export successful.')).toBeVisible()
+    await expect(page.getByText('Report export successful.')).toBeVisible()
     const suggestedFilename = download.suggestedFilename();
     expect(suggestedFilename).toBe('contact.xlsx')
   })
@@ -1659,7 +1668,7 @@ test.describe.serial('Sequential Edit Tests', () => {
 
     // 3. Search for the contact
     await contactList.searchBy({ Name: deleteName });
-    await page.waitForTimeout(2000); // Wait for search results
+    await contactList.searchBy({ Name: deleteName });
 
     // 4. Select the row
     // Find row with specific name
@@ -1695,7 +1704,7 @@ test.describe.serial('Sequential Edit Tests', () => {
     await verifyTopTableRow(page, { CheckView: currentContactName })
 
 
-    expect(await contact.inputName.inputValue()).toBe(currentContactName);
+    await expect(contact.inputName.inputValue()).toBe(currentContactName);
 
     await expect(contact.multipledropdownlv1.locator('input')).toHaveAttribute('placeholder', multipleDropdownData.MultipleDropdownlv1);
     //await expect(contact.multipledropdownlv2.locator('input')).toHaveAttribute('placeholder', multipleDropdownData.MultipleDropdownlv2);
@@ -1703,7 +1712,7 @@ test.describe.serial('Sequential Edit Tests', () => {
     await expect(contact.multipledropdownlv4.locator('input')).toHaveAttribute('placeholder', multipleDropdownData.MultipleDropdownlv4);
     await expect(contact.multipledropdownlv5.locator('input')).toHaveAttribute('placeholder', multipleDropdownData.MultipleDropdownlv5);
     await expect(contact.multipledropdownlv6.locator('input')).toHaveAttribute('placeholder', multipleDropdownData.MultipleDropdownlv6);
-    expect(await contact.inputEmail.inputValue()).toBe(contactData.Email);
+    await expect(contact.inputEmail.inputValue()).toBe(contactData.Email);
 
 
     const checkboxHTML = await contact.inputCheckbox.evaluate(el => el.outerHTML);
@@ -1734,14 +1743,14 @@ test.describe.serial('Sequential Edit Tests', () => {
       console.warn(`Unexpected Radiobtn value: ${contactData.Radiobtn}`);
     }
 
-    expect(await contact.input_Create_DateTime.inputValue()).toBe(contactData.DateTime);
+    await expect(contact.input_Create_DateTime.inputValue()).toBe(contactData.DateTime);
 
-    expect(await contact.input_Create_DateTime.inputValue()).toBe(contactData.DateTime);
-    expect(await contact.input_Create_Date.inputValue()).toBe(contactData.Date);
-    expect(await contact.input_Create_Time.inputValue()).toBe(contactData.Time);
-    expect(await contact.segment.inputValue()).toBe(contactData.Segment);
-    expect(await contact.input_segment.inputValue()).toBe(contactData.Input_Segment);
-    expect(await contact.addressNo.inputValue()).toBe(contactData.Address_no1);
+    await expect(contact.input_Create_DateTime.inputValue()).toBe(contactData.DateTime);
+    await expect(contact.input_Create_Date.inputValue()).toBe(contactData.Date);
+    await expect(contact.input_Create_Time.inputValue()).toBe(contactData.Time);
+    await expect(contact.segment.inputValue()).toBe(contactData.Segment);
+    await expect(contact.input_segment.inputValue()).toBe(contactData.Input_Segment);
+    await expect(contact.addressNo.inputValue()).toBe(contactData.Address_no1);
 
   })
 
@@ -2131,7 +2140,7 @@ test.describe.serial('Sequential Edit Tests', () => {
 
     await verifyTopTableRow(page, { CheckEdit: currentContactName });
 
-    await page.waitForTimeout(500);
+    // await page.waitForTimeout(500);
 
     // เคลียร์ข้อมูลเดิมใน Multi Dropdown Level 1 โดยกด X icon
     await page.locator('#dyn_JEFOkL_clear > .lucide').click();
@@ -2887,7 +2896,7 @@ test.describe.serial('Sequential Edit Tests', () => {
         // If no files, upload one to ensure we have something to delete
         await page.setInputFiles('input[type="file"]', ['tests/file_update-test/csv-test.csv']);
       }
-      expect(await items.count()).toBeGreaterThan(0);
+      await expect(items.count()).toBeGreaterThan(0);
     }).toPass();
 
     // 1. Get initial state

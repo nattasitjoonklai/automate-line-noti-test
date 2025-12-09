@@ -175,20 +175,34 @@ export class Element_Create_Contact {
   async createContact() {
     await this.btnCreateContact.click();
 
-    // Retry logic for flaky page load
-    for (let i = 0; i < 3; i++) {
-      try {
-        await this.inputName.waitFor({ state: 'visible', timeout: 5000 });
-        return; // Success
-      } catch (e) {
-        console.log(`Create page elements missing (Attempt ${i + 1}). Refreshing...`);
-        await this.page.reload();
-        await this.page.waitForLoadState('domcontentloaded');
+    // Wait for navigation to create page
+    try {
+      await this.page.waitForURL(/.*create.*/, { timeout: 10000 });
+    } catch (e) {
+      console.log('Navigation to create page failed or timed out.');
+    }
+
+    // Use a longer timeout for the initial wait instead of networkidle which can be flaky
+    try {
+      await this.inputName.waitFor({ state: 'visible', timeout: 20000 });
+    } catch (e) {
+      console.log('Create page elements missing after 20s. Triggering retry logic...');
+
+      // Retry logic for flaky page load
+      for (let i = 0; i < 2; i++) {
+        try {
+          console.log(`Refreshing page (Attempt ${i + 1})...`);
+          await this.page.reload();
+          await this.inputName.waitFor({ state: 'visible', timeout: 20000 });
+          return; // Success
+        } catch (retryError) {
+          console.log(`Retry ${i + 1} failed.`);
+        }
       }
     }
 
-    // Final check
-    await expect(this.inputName).toBeVisible();
+    // Final check with standard timeout
+    await expect(this.inputName).toBeVisible({ timeout: 10000 });
   }
 
   async search() {
@@ -201,7 +215,23 @@ export class Element_Create_Contact {
   async goto() {
     await this.page.goto('/contact');
     await this.page.waitForLoadState('domcontentloaded');
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('networkidle');
+    // Wait for table to load and have at least 1 row
+    try {
+      await expect(async () => {
+        const rowCount = await this.page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').count();
+        expect(rowCount).toBeGreaterThan(0);
+      }).toPass({ timeout: 10000 });
+    } catch (e) {
+      console.log('Table rows not found. Refreshing page...');
+      await this.page.reload();
+      await this.page.waitForLoadState('domcontentloaded');
+      await this.page.waitForLoadState('networkidle');
+      await expect(async () => {
+        const rowCount = await this.page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').count();
+        expect(rowCount).toBeGreaterThan(0);
+      }).toPass({ timeout: 10000 });
+    }
   }
   async export() {
     await this.btnExport.click();
@@ -259,7 +289,6 @@ export class Element_Create_Contact {
 
       if (currentPlaceholder !== fields.Dropdown) {
         await this.dropdown.click();
-        await this.page.waitForTimeout(1000);
         await this.page.getByRole('option', { name: fields.Dropdown }).click();
       } else {
         console.log(`Dropdown already has value "${fields.Dropdown}", skipping...`);
@@ -322,7 +351,7 @@ export class Element_Create_Contact {
         // ถ้า address row ยังไม่มี ให้คลิก Add Address
         if (!isAddressRowVisible) {
           await this.btn_address.click();
-          await this.page.waitForTimeout(500);
+          await this.btn_address.click();
 
           // รอให้ address row ปรากฏ
           await addressRowInput.waitFor({ state: 'visible', timeout: 3000 }).catch(() => {
@@ -339,7 +368,7 @@ export class Element_Create_Contact {
         if (hasValue(fields[subKey])) {
           const subLocator = this.page.locator(`#dyn_subdistrict_${index}`).getByRole('combobox');
           await subLocator.click();
-          await this.page.waitForTimeout(500);
+          await subLocator.click();
           await subLocator.fill(fields[subKey]);
           await this.page.locator('li.p-listbox-option').first().click();
         }
@@ -348,7 +377,7 @@ export class Element_Create_Contact {
         if (hasValue(fields[districtKey])) {
           const distLocator = this.page.locator(`#dyn_district_${index}`).getByRole('combobox');
           await distLocator.click();
-          await this.page.waitForTimeout(500);
+          await distLocator.click();
           await distLocator.fill(fields[districtKey]);
           await this.page.locator('li.p-listbox-option').first().click();
         }
@@ -358,9 +387,7 @@ export class Element_Create_Contact {
 
           const provLocator = this.page.locator(`#dyn_province_${index}`).getByRole('combobox');
           await provLocator.click();
-          await this.page.waitForTimeout(500);
           await provLocator.fill(fields[provKey]);
-          await this.page.waitForTimeout(1000);
           await this.page.locator('li.p-listbox-option').first().click();
         }
 
@@ -368,14 +395,14 @@ export class Element_Create_Contact {
         if (hasValue(fields[zipKey])) {
           const zipLocator = this.page.locator(`#dyn_zipcode_${index}`).getByRole('combobox');
           await zipLocator.click();
-          await this.page.waitForTimeout(500);
+          await zipLocator.click();
           await zipLocator.fill(fields[zipKey]);
           await this.page.locator('li.p-listbox-option').first().click();
         }
       }
     }
 
-    await this.page.waitForTimeout(3000);
+    // await this.page.waitForTimeout(3000);
   }
 
 
@@ -449,7 +476,13 @@ export class Element_Create_Contact {
       }
 
       await optionLocator.click();
-      await this.page.waitForTimeout(1000)
+
+
+      // ✅ เช็คว่า dropdown เลือกค่าแล้วจริงๆ ก่อนไป dropdown ถัดไป
+      await expect(async () => {
+        const selectedValue = await inputLocator.getAttribute('placeholder');
+        expect(selectedValue).toContain(String(value));
+      }).toPass({ timeout: 5000 });
     }
 
 
@@ -526,37 +559,37 @@ export class Element_Create_Contact {
     if (hasValue(fields.MultipleDropdownlv1)) {
       await this.page.locator('#dyn_JEFOkL').click();
       await this.page.getByRole('option', { name: fields.MultipleDropdownlv1 }).click();
-      await this.page.waitForTimeout(500);
+      await this.page.getByRole('option', { name: fields.MultipleDropdownlv1 }).click();
     }
 
     if (hasValue(fields.MultipleDropdownlv2)) {
       await this.page.locator('#dyn_ds1WmD').click();
       await this.page.getByRole('option', { name: fields.MultipleDropdownlv2 }).click();
-      await this.page.waitForTimeout(500);
+      await this.page.getByRole('option', { name: fields.MultipleDropdownlv2 }).click();
     }
 
     if (hasValue(fields.MultipleDropdownlv3)) {
       await this.page.locator('#dyn_kGCQa0').click();
       await this.page.getByRole('option', { name: fields.MultipleDropdownlv3 }).click();
-      await this.page.waitForTimeout(500);
+      await this.page.getByRole('option', { name: fields.MultipleDropdownlv3 }).click();
     }
 
     if (hasValue(fields.MultipleDropdownlv4)) {
       await this.page.locator('#dyn_Rtp6MP').click();
       await this.page.getByRole('option', { name: fields.MultipleDropdownlv4 }).click();
-      await this.page.waitForTimeout(500);
+      await this.page.getByRole('option', { name: fields.MultipleDropdownlv4 }).click();
     }
 
     if (hasValue(fields.MultipleDropdownlv5)) {
       await this.page.locator('#dyn_BI5q7i').click();
       await this.page.getByRole('option', { name: fields.MultipleDropdownlv5 }).click();
-      await this.page.waitForTimeout(500);
+      await this.page.getByRole('option', { name: fields.MultipleDropdownlv5 }).click();
     }
 
     if (hasValue(fields.MultipleDropdownlv6)) {
       await this.page.locator('#dyn_fKpu0q').click();
       await this.page.getByRole('option', { name: fields.MultipleDropdownlv6 }).click();
-      await this.page.waitForTimeout(500);
+      await this.page.getByRole('option', { name: fields.MultipleDropdownlv6 }).click();
     }
 
     // Phone
@@ -634,7 +667,7 @@ export class Element_Create_Contact {
 
     // Click Search button
     await this.page.getByRole('button', { name: 'Search' }).click();
-    await this.page.waitForTimeout(2000);
+    await this.page.getByRole('button', { name: 'Search' }).click();
   }
 
   // Method สำหรับเช็คค่า Multi Dropdown แต่ละ level จาก placeholder

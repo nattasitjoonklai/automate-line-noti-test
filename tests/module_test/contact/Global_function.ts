@@ -428,14 +428,52 @@ export class ContactAPI {
 export async function verifyTopTableRow(page: Page, expected: { Name?: string, Phone?: string, Email?: string, CheckEdit?: string, CheckView?: string, StrictTopRow?: boolean }) {
   // CheckEdit and CheckView logic remains the same
   if (expected.CheckEdit) {
+    // Wait for table to load and have at least 1 row
+    try {
+      await expect(async () => {
+        const rowCount = await page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').count();
+        expect(rowCount).toBeGreaterThan(0);
+      }).toPass({ timeout: 10000 });
+    } catch (e) {
+      console.log('Table rows not found (CheckEdit). Refreshing page...');
+      await page.reload();
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle');
+      await expect(async () => {
+        const rowCount = await page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').count();
+        expect(rowCount).toBeGreaterThan(0);
+      }).toPass({ timeout: 10000 });
+    }
+
     await page.getByRole('row', { name: expected.CheckEdit }).locator('#dyn_row_action').click();
     await page.getByRole('menuitem', { name: 'Edit' }).click();
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
     return;
   }
 
   if (expected.CheckView) {
+    // Wait for table to load and have at least 1 row
+    try {
+      await expect(async () => {
+        const rowCount = await page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').count();
+        expect(rowCount).toBeGreaterThan(0);
+      }).toPass({ timeout: 10000 });
+    } catch (e) {
+      console.log('Table rows not found (CheckView). Refreshing page...');
+      await page.reload();
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle');
+      await expect(async () => {
+        const rowCount = await page.locator('#dyn_contactTable tr[id^="dyn_rows_"]').count();
+        expect(rowCount).toBeGreaterThan(0);
+      }).toPass({ timeout: 10000 });
+    }
+
     await page.getByRole('row', { name: expected.CheckView }).locator('#dyn_row_action').click();
     await page.getByRole('menuitem', { name: 'View' }).click();
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
     return;
   }
 
