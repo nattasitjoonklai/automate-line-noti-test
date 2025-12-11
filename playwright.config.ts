@@ -10,7 +10,7 @@ export default defineConfig({
   // รันทีละ 1 เท่านั้น (สำคัญมากสำหรับโหมดเปิดหน้าจอ)
   workers: 1,
   fullyParallel: false,
-  retries: 0,
+  retries: 1,
 
   // เพิ่ม Timeout เผื่อกรณี Webhook ตอบกลับช้า หรือรอ UI Render
   timeout: 120 * 1000,

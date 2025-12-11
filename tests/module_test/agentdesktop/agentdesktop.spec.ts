@@ -274,6 +274,11 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.selectTaskType('mytask');
         await page.waitForTimeout(1000);
+
+        // Verify tab is active
+        await expect(agentDesktop.tabMyTask).toHaveClass(/active/);
+        console.log('✅ Verified My Task tab is active');
+
         const count = await agentDesktop.getTaskCount();
         if (count > 0) {
             await agentDesktop.verifyTaskCardElements(0);
@@ -289,6 +294,11 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.selectTaskType('pending');
         await page.waitForTimeout(1000);
+
+        // Verify tab is active
+        await expect(agentDesktop.tabPending).toHaveClass(/active/);
+        console.log('✅ Verified Pending tab is active');
+
         const count = await agentDesktop.getTaskCount();
         if (count > 0) {
             await agentDesktop.verifyTaskCardElements(0);
@@ -304,6 +314,11 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.selectTaskType('guest');
         await page.waitForTimeout(1000);
+
+        // Verify tab is active
+        await expect(agentDesktop.tabGuest).toHaveClass(/active/);
+        console.log('✅ Verified Guest tab is active');
+
         const count = await agentDesktop.getTaskCount();
         if (count > 0) {
             await agentDesktop.verifyTaskCardElements(0);
@@ -319,6 +334,11 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.selectTaskType('group');
         await page.waitForTimeout(1000);
+
+        // Verify tab is active
+        await expect(agentDesktop.tabGroup).toHaveClass(/active/);
+        console.log('✅ Verified Group tab is active');
+
         const count = await agentDesktop.getTaskCount();
         if (count > 0) {
             await agentDesktop.verifyTaskCardElements(0);
@@ -334,6 +354,11 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
         await agentDesktop.selectTaskType('all');
         await page.waitForTimeout(1000);
+
+        // Verify tab is active
+        await expect(agentDesktop.tabAllTasks).toHaveClass(/active/);
+        console.log('✅ Verified All tab is active');
+
         const count = await agentDesktop.getTaskCount();
         if (count > 0) {
             await agentDesktop.verifyTaskCardElements(0);

@@ -1,6 +1,8 @@
 import { fa, th } from '@faker-js/faker';
 import { Page, Locator, expect } from '@playwright/test';
 import { selectDateTime } from './FillForm';
+import { performLogin } from '../../auth_utils';
+
 export class Element_Contact {
   readonly page: Page;
   //StartDate EndDate
@@ -153,7 +155,11 @@ export class Element_Contact {
   }
   async goto() {
     await this.page.goto('/contact');
-    await this.page.waitForURL('/contact');
+    if (this.page.url().includes('/login')) {
+      console.log('Redirected to login page, performing login...');
+      await performLogin(this.page);
+    }
+    await this.page.waitForURL('**/contact', { timeout: 30000 });
     await this.page.waitForLoadState('domcontentloaded');
     await this.page.waitForLoadState('networkidle');
     console.log('Navigated to /contact and page loaded completely.');
