@@ -61,12 +61,15 @@ export class Element_AgentDesktop {
 
     // Create Ticket Menu
     readonly menuExistingContact: Locator;
+    readonly menuNewContact: Locator;
 
     // Search Contact Modal
     readonly modalSearchContact: Locator;
     readonly inputSearchContact: Locator;
     readonly btnSearchContact: Locator;
     readonly btnSelectContact: Locator;
+
+    // ... (rest of properties)
 
     // New Elements for CRM_AG00046+
     readonly dropdown: Locator;
@@ -81,6 +84,7 @@ export class Element_AgentDesktop {
     readonly inputDatemasking: Locator;
     readonly btnRadio: Locator;
     readonly inputCheckbox: Locator;
+    readonly inputCheckbox2: Locator;
     readonly inputDatetime: Locator;
     readonly inputDate: Locator;
     readonly inputTime: Locator;
@@ -96,6 +100,9 @@ export class Element_AgentDesktop {
     readonly inputNote: Locator;
     readonly btnSendNote: Locator;
 
+    readonly btnSaveNewContact: Locator;
+    readonly btnconfirmNewContact: Locator;
+
     constructor(page: Page) {
         this.page = page;
 
@@ -108,20 +115,16 @@ export class Element_AgentDesktop {
         this.statusBreak = page.locator('[data-test="status-break"]');
         this.statusAcd = page.locator('[data-test="status-acd"]');
 
-        // Channel Filter Tabs - Updated to match current DOM
-        // Using class selector for container and text for specific tabs if available, or generic check in Global_function
-        // These specific locators might not be used if we use the generic verification in Global_function
-        this.tabAll = page.locator('.flex-wrap').getByText('all', { exact: true });
-        // For other tabs without text, we might need to rely on index or other attributes if available
-        // Placeholder locators for now
-        this.tabPhone = page.locator('.flex-wrap > div').nth(1);
-        this.tabLine = page.locator('.flex-wrap > div').nth(2);
-        this.tabEmail = page.locator('.flex-wrap > div').nth(3);
-        this.tabFacebook = page.locator('.flex-wrap > div').nth(4);
-        this.tabTask = page.locator('.flex-wrap > div').nth(5);
-        this.tabInstagram = page.locator('.flex-wrap > div').nth(6);
-        this.tabTelegram = page.locator('.flex-wrap > div').nth(7);
-        this.tabLazada = page.locator('.flex-wrap > div').nth(8);
+        // Channel Filter Tabs - Updated to use robust selectors
+        this.tabAll = page.locator('.flex-wrap > div').filter({ hasText: 'all' }).first();
+        this.tabPhone = page.locator('.flex-wrap > div').filter({ has: page.locator('svg path[d^="M22 16.92"]') }).first();
+        this.tabLine = page.locator('.flex-wrap > div').filter({ has: page.locator('svg path[d^="M2 10.5"]') }).first();
+        this.tabEmail = page.locator('.flex-wrap > div').filter({ has: page.locator('svg rect[width="20"]') }).first();
+        this.tabFacebook = page.locator('.flex-wrap > div').filter({ has: page.locator('svg path[d^="M10.488"]') }).first();
+        this.tabTask = page.locator('.flex-wrap > div').filter({ has: page.locator('svg path[d^="M4 22"]') }).first();
+        this.tabInstagram = page.locator('.flex-wrap > div').filter({ has: page.locator('svg.bi-instagram') }).first();
+        this.tabTelegram = page.locator('.flex-wrap > div').filter({ has: page.locator('svg path[d^="M14.5 1.5"]') }).first();
+        this.tabLazada = page.locator('.flex-wrap > div').filter({ has: page.locator('text', { hasText: 'Laz' }) }).first();
 
         // Action Buttons
         this.btnCreateTicket = page.locator('button#create-ticket-button');
@@ -129,7 +132,8 @@ export class Element_AgentDesktop {
         this.btnImportCSV = page.locator('button#btn-import-csv:has(.lucide-upload-icon)');
 
         // Create Ticket Menu
-        this.menuExistingContact = page.getByText('Existing Contact');
+        this.menuExistingContact = page.locator('#existing-contact-button');
+        this.menuNewContact = page.locator('#new-contact-button');
 
         // Search Contact Modal
         this.modalSearchContact = page.getByRole('dialog');
@@ -195,24 +199,133 @@ export class Element_AgentDesktop {
         this.multipledropdownlv5 = page.locator('#dyn_BI5q7i').first();
         this.multipledropdownlv6 = page.locator('#dyn_fKpu0q').first();
 
-        this.inputText = page.getByPlaceholder('textinput').first();
+        this.inputText = page.locator('#dyn_txt_input').first();
         this.inputDatemasking = page.locator('#dyn_datamasking').first();
-        this.btnRadio = page.locator('#dyn_radiobtn').first();
+        this.btnRadio = page.locator('#dyn_radiobtn_0').first(); // Default to first radio group/option if needed, or handle in method
         this.inputCheckbox = page.locator('#dyn_chkbox').first();
+        this.inputCheckbox2 = page.locator('#dyn_chk_box').first();
         this.inputDatetime = page.locator('#dyn_feu1').first();
         this.inputDate = page.locator('#dyn_R8i6Yo').first();
         this.inputTime = page.locator('#dyn_yC3zrN').first();
-        this.btnLink = page.getByRole('button', { name: 'btntest' }).first();
+        this.btnLink = page.locator('#dyn_btn').first();
         this.segment = page.locator('#dyn_name_segment').first();
         this.input_segment = page.locator('#dyn_text_segment').first();
 
-        this.fileInput = page.locator('input[type="file"]').first();
+        this.fileInput = page.locator('.filepond--browser').first();
         this.btnRemoveFile = page.locator('button.remove-file').first(); // Placeholder selector
         this.btnConfirmRemoveFile = page.getByRole('button', { name: 'Remove', exact: true });
 
         this.btnSync = page.getByRole('button', { name: 'Sync' });
-        this.inputNote = page.getByPlaceholder('note');
+        this.inputNote = page.locator('#dyn_jYKyZy').first();
         this.btnSendNote = page.locator('#dyn_send_note');
+
+        // Save Button for New Contact
+        this.btnSaveNewContact = page.getByRole('button', { name: 'Save' }).locator('visible=true');
+        this.btnconfirmNewContact = page.getByRole('button', { name: 'Create' }).locator('visible=true');
+    }
+
+    async createTicketNewContact() {
+        await this.btnCreateTicket.click();
+        await this.menuNewContact.click();
+
+        // Verify we are on the Create Contact page/modal
+        const inputName = this.page.locator('#dyn_name').first();
+        await expect(inputName).toBeVisible();
+        console.log('✅ Verified navigation to Create Contact page');
+    }
+
+    async newcreate() {
+        await this.btnSaveNewContact.click();
+        await this.btnconfirmNewContact.click();
+        console.log('✅ Clicked Save button for New Contact');
+    }
+
+    async fillAllNewContactData(data: any) {
+        await this.page.waitForTimeout(2000); // Reduced timeout
+        // Name
+        await this.page.locator('#dyn_name').first().fill(data.name);
+
+        // Dropdown
+        if (data.dropdown) {
+            await this.selectDropdown(data.dropdown);
+        }
+
+        // Search (if needed, skipping for now as it seems to be a search box, not a form field to save)
+
+        // Multiple Dropdown
+        if (data.multiDropdown) {
+            await this.fillInputMultipleDropdown(data.multiDropdown);
+        }
+
+        // Phone
+        await this.page.locator('#dyn_phone_0').first().fill(data.phone);
+
+        // Email
+        await this.page.locator('#dyn_email').first().fill(data.email);
+
+        // Data Masking
+        if (data.dataMasking) {
+            await this.inputDatemasking.fill(data.dataMasking);
+        }
+
+        // Checkbox 1
+        if (data.checkbox === 'true' || data.checkbox === true) {
+            if (!(await this.inputCheckbox.isChecked())) {
+                await this.inputCheckbox.check();
+            }
+        }
+
+        // Radio
+        if (data.radio) {
+            // Assuming value matches the radio value attribute
+            await this.page.locator(`input[type="radio"][value="${data.radio}"]`).check();
+        }
+
+        // Date Time
+        if (data.dateTime) {
+            await this.inputDatetime.locator('input').fill(data.dateTime);
+            await this.page.keyboard.press('Enter');
+        }
+
+        // Date
+        if (data.date) {
+            await this.inputDate.locator('input').fill(data.date);
+            await this.page.keyboard.press('Enter');
+        }
+
+        // Time
+        if (data.time) {
+            await this.inputTime.locator('input').fill(data.time);
+            await this.page.keyboard.press('Enter');
+        }
+
+        // Text Input
+        if (data.textInput) {
+            await this.inputText.fill(data.textInput);
+        }
+
+        // Note
+        if (data.note) {
+            await this.inputNote.fill(data.note);
+            // await this.btnSendNote.click(); // Do we send it immediately?
+        }
+
+        // Segment
+        if (data.segment) {
+            await this.segment.fill(data.segment);
+        }
+
+        // Checkbox 2
+        if (data.checkbox2 === 'true' || data.checkbox2 === true) {
+            if (!(await this.inputCheckbox2.isChecked())) {
+                await this.inputCheckbox2.check();
+            }
+        }
+
+        // File Upload (if provided)
+        if (data.files && data.files.length > 0) {
+            await this.uploadFiles(data.files);
+        }
     }
 
     async expandSearch() {
@@ -259,8 +372,8 @@ export class Element_AgentDesktop {
 
         try {
             await Promise.race([
-                selectButton.waitFor({ state: 'visible', timeout: 5000 }),
-                contactInput.waitFor({ state: 'visible', timeout: 5000 })
+                selectButton.waitFor({ state: 'visible', timeout: 10000 }),
+                contactInput.waitFor({ state: 'visible', timeout: 10000 })
             ]);
         } catch (error) {
             console.log('⚠️ Timeout waiting for search results or redirect.');

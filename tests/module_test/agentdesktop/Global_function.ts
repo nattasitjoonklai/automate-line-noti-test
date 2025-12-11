@@ -1,4 +1,5 @@
 import { Page, expect } from "@playwright/test";
+import { Element_AgentDesktop } from "./Element_AgentDesktop";
 
 /**
  * Verify that Agent Desktop page elements are visible
@@ -378,4 +379,383 @@ export async function verifyDefaultTaskListWithAPI(page: Page, clearAction: () =
     }
 
     console.log('✅ Default task list verified with API');
+}
+
+/**
+ * Fetch all tasks by scrolling through pagination and verify against UI
+ * @param page Playwright Page object
+ * @param wrapperSelector Selector for the scrollable task container
+ * @param apiEndpoint API endpoint to listen for (e.g. '/api/tasks/all')
+ * @param initialData Optional initial API response data (Page 1) if already loaded
+ */
+export async function fetchAllTasksAndVerify(
+    page: Page,
+    wrapperSelector: string,
+    apiEndpoint: string,
+    initialData: any = null
+) {
+    const taskWrapper = page.locator(wrapperSelector);
+    await expect(taskWrapper).toBeVisible();
+
+    let allApiTasks: any[] = [];
+    let currentPage = 0;
+    let lastPage = 1; // Start with 1, will update from response
+    let attempts = 0;
+    const maxAttempts = 50; // Safety limit for pages
+
+    console.log(`🚀 Starting full pagination fetch for ${apiEndpoint}`);
+
+    // Initialize from initialData if provided
+    if (initialData && initialData.data) {
+        const data = initialData.data;
+        currentPage = data.current_page;
+        lastPage = data.last_page;
+        const newTasks = data.data || [];
+
+        allApiTasks = [...newTasks];
+        console.log(`📄 Initial Page ${currentPage}/${lastPage} loaded. Tasks: ${allApiTasks.length}`);
+
+        if (allApiTasks.length > 0) {
+            // Wait for at least one task to be visible to ensure UI is rendered
+            // This addresses the "loading too fast" issue
+            const firstTask = page.locator(`${wrapperSelector} > div > div`).first();
+            try {
+                await expect(firstTask).toBeVisible({ timeout: 10000 });
+            } catch (e) {
+                console.log('⚠️ Timeout waiting for first task to appear. UI might be slow or empty.');
+                // Debug: Print all visible wrappers
+                const wrappers = page.locator('[id*="wrapper"]');
+                const count = await wrappers.count();
+                console.log(`DEBUG: Found ${count} elements with 'wrapper' in ID`);
+                for (let i = 0; i < count; i++) {
+                    const id = await wrappers.nth(i).getAttribute('id');
+                    const visible = await wrappers.nth(i).isVisible();
+                    console.log(`Wrapper ${i}: ID=${id}, Visible=${visible}`);
+                }
+            }
+        }
+    }
+
+    // Initial wait for the first load if not already loaded, or we just start scrolling
+    // We'll assume we might need to scroll to trigger next pages.
+    // But first, we need to capture the current state or the next request.
+
+    // Actually, the best way is to scroll and wait for response repeatedly until current_page == last_page.
+    // If we are already at page 1, we scroll to get page 2.
+
+    // Map to store unique UI tasks (key: text content or ticket no)
+    const uiTasksMap = new Map<string, any>();
+
+    // Helper to extract current visible tasks
+    const extractVisibleTasks = async () => {
+        // Selector based on observed structure: div with flex items-start gap-2
+        // Or generic div child of wrapper's container
+        const items = page.locator(`${wrapperSelector} > div > div`);
+        const count = await items.count();
+
+        for (let i = 0; i < count; i++) {
+            const item = items.nth(i);
+            if (await item.isVisible()) {
+                const text = (await item.innerText()).trim();
+                // Use text as key for uniqueness (or extract ID if possible)
+                // Filter out empty strings
+                if (text && !uiTasksMap.has(text)) {
+                    const ticketMatch = text.match(/\d{8}-\d{3}/);
+
+                    // Check for channel icon (SVG in the avatar wrapper)
+                    const icon = await item.locator('.absolute.-bottom-1.-right-1 svg').first();
+                    const hasIcon = await icon.isVisible();
+
+                    uiTasksMap.set(text, {
+                        text: text,
+                        ticketNo: ticketMatch ? ticketMatch[0] : null,
+                        hasIcon: hasIcon
+                    });
+                }
+            }
+        }
+    };
+
+    // Extract initial visible tasks before scrolling
+    await extractVisibleTasks();
+
+    while (currentPage < lastPage && attempts < maxAttempts) {
+        attempts++;
+
+        // Create a promise for the next response
+        // We filter by endpoint and status 200
+        const responsePromise = page.waitForResponse(response =>
+            response.url().includes(apiEndpoint) &&
+            response.status() === 200,
+            { timeout: 5000 } // Short timeout for wait, if no request happens we might be done or need more scroll
+        ).catch(() => null); // Catch timeout if no request is made (e.g. end of list)
+
+        // Scroll to bottom to trigger load
+        await taskWrapper.evaluate((el) => el.scrollTo(0, el.scrollHeight));
+
+        // Wait for response
+        const response = await responsePromise;
+
+        if (response) {
+            const responseBody = await response.json();
+            const data = responseBody.data;
+
+            if (data) {
+                currentPage = data.current_page;
+                lastPage = data.last_page;
+                const newTasks = data.data || [];
+
+                // Avoid duplicates if any (though API should give unique pages)
+                // We'll just push for now, or check IDs
+                // Simple concat:
+                // allApiTasks = allApiTasks.concat(newTasks);
+
+                // Better: Add only if not exists (by t_id or contact_id)
+                for (const task of newTasks) {
+                    if (!allApiTasks.some(t => t.t_id === task.t_id)) {
+                        allApiTasks.push(task);
+                    }
+                }
+
+                console.log(`📄 Page ${currentPage}/${lastPage} loaded. Total API tasks: ${allApiTasks.length}`);
+            }
+        } else {
+            // No response triggered.
+            // Could be we are at the end or need to wait/scroll more.
+            // If we haven't reached lastPage, maybe try scrolling again?
+            console.log('⚠️ No API response triggered on scroll.');
+
+            // If we have some data and current >= last, we break.
+            // If we don't know lastPage yet (e.g. first load missed), we might be stuck.
+            // But usually the test starts after first load.
+
+            // Let's check if we can break
+            if (currentPage >= lastPage && lastPage > 1) break;
+
+            // If we are stuck, maybe wait a bit and try scrolling again in next loop
+            await page.waitForTimeout(1000);
+        }
+
+        // Extract tasks currently visible in UI
+        await extractVisibleTasks();
+
+        // Small pause to let UI render
+        await page.waitForTimeout(500);
+    }
+
+    console.log(`✅ Finished pagination. Total API tasks: ${allApiTasks.length}`);
+
+    // Final scroll to ensure everything is rendered (only if we actually have multiple pages)
+    if (lastPage > 1) {
+        await taskWrapper.evaluate((el) => el.scrollTo(0, el.scrollHeight));
+        await page.waitForTimeout(1000);
+    }
+
+    await extractVisibleTasks();
+
+    // Extract UI tasks
+    // Selector: wrapper > div > div (based on observed structure)
+    // Try a more general selector to capture all task cards
+    const uiTasks = Array.from(uiTasksMap.values());
+    console.log(`📊 Found ${uiTasks.length} unique tasks in UI`);
+
+    return { apiTasks: allApiTasks, uiTasks };
+}
+
+/**
+ * Reusable function to verify task tabs (My Task, Pending, Guest, Group, All)
+ */
+export async function verifyTaskTab(
+    page: Page,
+    agentDesktop: Element_AgentDesktop,
+    tabType: 'mytask' | 'pending' | 'guest' | 'group' | 'all',
+    apiEndpoint: string,
+    wrapperSelector: string,
+    preLoadedResponse: any = null
+) {
+    let firstResponseBody = preLoadedResponse;
+
+    if (!firstResponseBody) {
+        // Setup listener for the first API response (Page 1)
+        const firstResponsePromise = page.waitForResponse(response =>
+            response.url().includes(apiEndpoint) &&
+            response.status() === 200
+        );
+
+        await agentDesktop.selectTaskType(tabType);
+        await page.waitForTimeout(1000);
+
+        // Capture the first response data
+        const firstResponse = await firstResponsePromise;
+        firstResponseBody = await firstResponse.json();
+    } else {
+        // If response is pre-loaded (e.g. My Task on page load), just ensure we are on the tab
+        // For My Task, we are already there. For others, we might need to click if we passed response manually?
+        // Usually preLoadedResponse implies we are already in the right state.
+        // We can still verify the tab is active.
+    }
+
+    // Verify tab is active
+    let activeTab;
+    switch (tabType) {
+        case 'mytask': activeTab = agentDesktop.tabMyTask; break;
+        case 'pending': activeTab = agentDesktop.tabPending; break;
+        case 'guest': activeTab = agentDesktop.tabGuest; break;
+        case 'group': activeTab = agentDesktop.tabGroup; break;
+        case 'all': activeTab = agentDesktop.tabAllTasks; break;
+    }
+    await expect(activeTab).toHaveClass(/active/);
+    console.log(`✅ Verified ${tabType} tab is active`);
+
+    console.log(`Initial API Response captured: ${firstResponseBody.data?.data?.length} tasks`);
+
+    // Fetch all tasks with pagination and verify, passing the initial data
+    const { apiTasks, uiTasks } = await fetchAllTasksAndVerify(page, wrapperSelector, apiEndpoint, firstResponseBody);
+
+    console.log(`Summary: API Tasks: ${apiTasks.length}, UI Tasks: ${uiTasks.length} `);
+
+    // Verification
+    // We check by Ticket No first, then Name
+    let matchCount = 0;
+    const missingTasks = [];
+
+    for (const apiTask of apiTasks) {
+        const ticketNo = apiTask.cs_ticket_no;
+        const name = apiTask.c_name;
+
+        let found = false;
+        if (ticketNo) {
+            found = uiTasks.some(t => t.text.includes(ticketNo));
+        } else if (name) {
+            found = uiTasks.some(t => t.text.includes(name));
+        }
+
+        if (found) {
+            matchCount++;
+        } else {
+            missingTasks.push({ ticketNo, name });
+        }
+    }
+
+    console.log(`✅ Matched ${matchCount}/${apiTasks.length} tasks from API in UI`);
+
+    if (missingTasks.length > 0) {
+        console.log('❌ Missing Tasks in UI:', JSON.stringify(missingTasks, null, 2));
+    }
+
+    // Find tasks in UI that are NOT in API
+    const extraUiTasks = [];
+    for (const uiTask of uiTasks) {
+        let foundInApi = false;
+        // Check against all API tasks
+        for (const apiTask of apiTasks) {
+            const ticketNo = apiTask.cs_ticket_no;
+            const name = apiTask.c_name;
+            if ((ticketNo && uiTask.text.includes(ticketNo)) || (name && uiTask.text.includes(name))) {
+                foundInApi = true;
+                break;
+            }
+        }
+        if (!foundInApi) {
+            extraUiTasks.push(uiTask.text);
+        }
+    }
+
+    if (extraUiTasks.length > 0) {
+        console.log('⚠️ Extra Tasks in UI (not in API):', JSON.stringify(extraUiTasks, null, 2));
+    }
+
+    expect(matchCount).toBe(apiTasks.length);
+    expect(uiTasks.length).toBe(apiTasks.length);
+}
+
+/**
+ * Reusable function to verify Channel Filters (All, Facebook, Line, etc.)
+ * Verifies:
+ * 1. Filter selection state (active/inactive)
+ * 2. Task count matches API
+ * 3. All displayed tasks have visible channel icons
+ */
+export async function verifyChannelFilter(
+    page: Page,
+    agentDesktop: Element_AgentDesktop,
+    filterName: 'all' | 'phone' | 'line' | 'email' | 'facebook' | 'task' | 'instagram' | 'telegram' | 'lazada',
+    apiEndpoint: string,
+    wrapperSelector: string,
+    preLoadedResponse: any = null
+) {
+    let firstResponseBody = preLoadedResponse;
+
+    // Map filter names to locators from agentDesktop
+    const tabMap = {
+        all: agentDesktop.tabAll,
+        phone: agentDesktop.tabPhone,
+        line: agentDesktop.tabLine,
+        email: agentDesktop.tabEmail,
+        facebook: agentDesktop.tabFacebook,
+        task: agentDesktop.tabTask,
+        instagram: agentDesktop.tabInstagram,
+        telegram: agentDesktop.tabTelegram,
+        lazada: agentDesktop.tabLazada
+    };
+
+    const targetFilterBtn = tabMap[filterName];
+    if (!targetFilterBtn) {
+        throw new Error(`Unknown filter name: ${filterName}`);
+    }
+
+    if (!firstResponseBody) {
+        const firstResponsePromise = page.waitForResponse(response =>
+            response.url().includes(apiEndpoint) &&
+            response.status() === 200
+        );
+
+        await targetFilterBtn.click();
+        await page.waitForTimeout(500); // Wait for UI update
+
+        const firstResponse = await firstResponsePromise;
+        firstResponseBody = await firstResponse.json();
+    } else {
+        await targetFilterBtn.click();
+        await page.waitForTimeout(500);
+    }
+
+    // Verify Target Filter is active
+    await expect(targetFilterBtn).toHaveClass(/bg-primary/);
+    await expect(targetFilterBtn).toHaveClass(/text-white/);
+    console.log(`✅ Verified '${filterName}' filter is active`);
+
+    // Verify others are NOT active
+    // We can iterate through all values in tabMap
+    for (const [key, locator] of Object.entries(tabMap)) {
+        if (key !== filterName) {
+            // Check if it has cursor-pointer (meaning it's a filter button)
+            // The locators in Element_AgentDesktop point to the button div itself
+            if (await locator.getAttribute('class').then(c => c?.includes('cursor-pointer'))) {
+                await expect(locator).toHaveClass(/bg-slate-200/);
+                await expect(locator).toHaveClass(/text-gray-700/);
+                await expect(locator).not.toHaveClass(/bg-primary/);
+            }
+        }
+    }
+    console.log(`✅ Verified other filters are inactive`);
+
+    // Fetch and Verify Tasks
+    const { apiTasks, uiTasks } = await fetchAllTasksAndVerify(page, wrapperSelector, apiEndpoint, firstResponseBody);
+
+    // Verify Task Count
+    expect(uiTasks.length).toBe(apiTasks.length);
+    console.log(`✅ Verified Task Count: ${uiTasks.length}`);
+
+    // Verify Icons
+    let iconCount = 0;
+    for (const task of uiTasks) {
+        if (task.hasIcon) {
+            iconCount++;
+        } else {
+            console.log(`❌ Task missing icon: ${task.text.substring(0, 50)}...`);
+        }
+    }
+    expect(iconCount).toBe(uiTasks.length);
+    console.log(`✅ Verified all ${iconCount} tasks have channel icons`);
 }

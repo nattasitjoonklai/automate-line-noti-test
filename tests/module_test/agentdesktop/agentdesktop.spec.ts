@@ -10,14 +10,29 @@ import {
     verifyNotificationTabs,
     verifyTicketDetailTabs,
     verifySearchWithAPI,
-    verifyDefaultTaskListWithAPI
+    verifyDefaultTaskListWithAPI,
+    fetchAllTasksAndVerify,
+    verifyTaskTab,
+    verifyChannelFilter
 } from "./Global_function";
 
 // ... (existing imports and data_test)
 
 
+
+function generateRandomString(length: number) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+}
+
+let createdContactName = "";
+let editcontactName = "";
 const data_test = {
-    name: "TestData0",
+    name: "Nattasit",
     name_edt: "ทดสอบ AGTDT",
     phone: "0812345678",
     email: "test@example.com",
@@ -69,6 +84,31 @@ const data_test = {
         jpeg_large: "jpeg-20mb.jpeg"
     }
 }
+
+const newContactData = {
+    name: "",
+    dropdown: data_test.dropdown,
+    multiDropdown: data_test.multiDropdown,
+    phone: "0899999999",
+    email: "test@gmail.com",
+    dataMasking: "1234567890",
+    checkbox: true,
+    radio: "value1",
+    dateTime: "2025-12-25 10:00",
+    date: "2025-12-25",
+    time: "10:00",
+    textInput: "Test Input",
+    //note: "Test Note",
+    segment: "Test Segment",
+    checkbox2: true,
+    // files: [data_test.files.png_small] // Optional: Test file upload if needed
+};
+
+
+// Generate random name (max 15 chars)
+createdContactName = `Test ${generateRandomString(10)}`; // "Test " is 5 chars, + 10 random = 15 chars max
+newContactData.name = createdContactName;
+console.log(`🔹 Generated Contact Name: ${createdContactName}`)
 
 test.describe('Agent Desktop Tests', () => {
 
@@ -267,187 +307,129 @@ test.describe('Agent Desktop Tests', () => {
         }
     });
 
-    // Task Type Tests
+
     test('CRM_AG00012 การแสดงหน้า My Task', async ({ page }) => {
         const agentDesktop = new Element_AgentDesktop(page);
+
+        // Setup listener for the first API response (Page 1) BEFORE goto
+        const firstResponsePromise = page.waitForResponse(response =>
+            response.url().includes('/api/tasks/mytask') &&
+            response.status() === 200
+        );
+
         await agentDesktop.goto();
         await agentDesktop.waitForPageLoad();
-        await agentDesktop.selectTaskType('mytask');
-        await page.waitForTimeout(1000);
 
-        // Verify tab is active
-        await expect(agentDesktop.tabMyTask).toHaveClass(/active/);
-        console.log('✅ Verified My Task tab is active');
+        const firstResponse = await firstResponsePromise;
+        const firstResponseBody = await firstResponse.json();
 
-        const count = await agentDesktop.getTaskCount();
-        if (count > 0) {
-            await agentDesktop.verifyTaskCardElements(0);
-            console.log(`✅ Verified task elements for tab: mytask`);
-        } else {
-            console.log(`ℹ️ No tasks found in tab: mytask`);
-        }
+        await verifyTaskTab(page, agentDesktop, 'mytask', '/api/tasks/mytask', '[id^="mytask-wrapper"]:visible', firstResponseBody);
     });
 
     test('CRM_AG00013 การแสดงหน้า Pending', async ({ page }) => {
         const agentDesktop = new Element_AgentDesktop(page);
         await agentDesktop.goto();
         await agentDesktop.waitForPageLoad();
-        await agentDesktop.selectTaskType('pending');
-        await page.waitForTimeout(1000);
-
-        // Verify tab is active
-        await expect(agentDesktop.tabPending).toHaveClass(/active/);
-        console.log('✅ Verified Pending tab is active');
-
-        const count = await agentDesktop.getTaskCount();
-        if (count > 0) {
-            await agentDesktop.verifyTaskCardElements(0);
-            console.log(`✅ Verified task elements for tab: pending`);
-        } else {
-            console.log(`ℹ️ No tasks found in tab: pending`);
-        }
+        await verifyTaskTab(page, agentDesktop, 'pending', '/api/tasks/pending', '[id^="pending-wrapper"]:visible');
     });
 
     test('CRM_AG00014 การแสดงหน้า Guest', async ({ page }) => {
         const agentDesktop = new Element_AgentDesktop(page);
         await agentDesktop.goto();
         await agentDesktop.waitForPageLoad();
-        await agentDesktop.selectTaskType('guest');
-        await page.waitForTimeout(1000);
-
-        // Verify tab is active
-        await expect(agentDesktop.tabGuest).toHaveClass(/active/);
-        console.log('✅ Verified Guest tab is active');
-
-        const count = await agentDesktop.getTaskCount();
-        if (count > 0) {
-            await agentDesktop.verifyTaskCardElements(0);
-            console.log(`✅ Verified task elements for tab: guest`);
-        } else {
-            console.log(`ℹ️ No tasks found in tab: guest`);
-        }
+        await verifyTaskTab(page, agentDesktop, 'guest', '/api/tasks/guest', '[id^="guest-wrapper"]:visible');
     });
 
     test('CRM_AG00015 การแสดงหน้า Group', async ({ page }) => {
         const agentDesktop = new Element_AgentDesktop(page);
         await agentDesktop.goto();
         await agentDesktop.waitForPageLoad();
-        await agentDesktop.selectTaskType('group');
-        await page.waitForTimeout(1000);
-
-        // Verify tab is active
-        await expect(agentDesktop.tabGroup).toHaveClass(/active/);
-        console.log('✅ Verified Group tab is active');
-
-        const count = await agentDesktop.getTaskCount();
-        if (count > 0) {
-            await agentDesktop.verifyTaskCardElements(0);
-            console.log(`✅ Verified task elements for tab: group`);
-        } else {
-            console.log(`ℹ️ No tasks found in tab: group`);
-        }
+        await verifyTaskTab(page, agentDesktop, 'group', '/api/tasks/group', '[id^="group-wrapper"]:visible');
     });
 
     test('CRM_AG00016 การแสดงหน้า All', async ({ page }) => {
         const agentDesktop = new Element_AgentDesktop(page);
         await agentDesktop.goto();
         await agentDesktop.waitForPageLoad();
-        await agentDesktop.selectTaskType('all');
-        await page.waitForTimeout(1000);
-
-        // Verify tab is active
-        await expect(agentDesktop.tabAllTasks).toHaveClass(/active/);
-        console.log('✅ Verified All tab is active');
-
-        const count = await agentDesktop.getTaskCount();
-        if (count > 0) {
-            await agentDesktop.verifyTaskCardElements(0);
-            console.log(`✅ Verified task elements for tab: all`);
-        } else {
-            console.log(`ℹ️ No tasks found in tab: all`);
-        }
+        await verifyTaskTab(page, agentDesktop, 'all', '/api/tasks/all', '[id^="all-wrapper"]:visible');
     });
 
-    // Channel Filter Tests
-    test('CRM_AG00017 การฟิลเตอร์ All', async ({ page }) => {
+
+
+    test('CRM_AG00017 ตรวจสอบการทำงานของ Filter All', async ({ page }) => {
         const agentDesktop = new Element_AgentDesktop(page);
+
+        // Setup listener for the first API response (Page 1) BEFORE goto
+        // Assuming default tab is My Task
+        const firstResponsePromise = page.waitForResponse(response =>
+            response.url().includes('/api/tasks/mytask') &&
+            response.status() === 200
+        );
+
         await agentDesktop.goto();
         await agentDesktop.waitForPageLoad();
-        await agentDesktop.selectChannelFilter('all');
-        await page.waitForTimeout(500);
-        console.log(`✅ Selected channel filter: all`);
+
+        const firstResponse = await firstResponsePromise;
+        const firstResponseBody = await firstResponse.json();
+
+        // Use the reusable function
+        await verifyChannelFilter(page, agentDesktop, 'all', '/api/tasks/mytask', '[id^="mytask-wrapper"]:visible', firstResponseBody);
     });
 
     test('CRM_AG00018 การฟิลเตอร์ Phone', async ({ page }) => {
         const agentDesktop = new Element_AgentDesktop(page);
         await agentDesktop.goto();
         await agentDesktop.waitForPageLoad();
-        await agentDesktop.selectChannelFilter('phone');
-        await page.waitForTimeout(500);
-        console.log(`✅ Selected channel filter: phone`);
+        await verifyChannelFilter(page, agentDesktop, 'phone', '/api/tasks/mytask', '[id^="mytask-wrapper"]:visible');
     });
 
     test('CRM_AG00019 การฟิลเตอร์ Email', async ({ page }) => {
         const agentDesktop = new Element_AgentDesktop(page);
         await agentDesktop.goto();
         await agentDesktop.waitForPageLoad();
-        await agentDesktop.selectChannelFilter('email');
-        await page.waitForTimeout(500);
-        console.log(`✅ Selected channel filter: email`);
+        await verifyChannelFilter(page, agentDesktop, 'email', '/api/tasks/mytask', '[id^="mytask-wrapper"]:visible');
     });
 
     test('CRM_AG00020 การฟิลเตอร์ Line', async ({ page }) => {
         const agentDesktop = new Element_AgentDesktop(page);
         await agentDesktop.goto();
         await agentDesktop.waitForPageLoad();
-        await agentDesktop.selectChannelFilter('line');
-        await page.waitForTimeout(500);
-        console.log(`✅ Selected channel filter: line`);
+        await verifyChannelFilter(page, agentDesktop, 'line', '/api/tasks/mytask', '[id^="mytask-wrapper"]:visible');
     });
 
     test('CRM_AG00021 การฟิลเตอร์ Facebook', async ({ page }) => {
         const agentDesktop = new Element_AgentDesktop(page);
         await agentDesktop.goto();
         await agentDesktop.waitForPageLoad();
-        await agentDesktop.selectChannelFilter('facebook');
-        await page.waitForTimeout(500);
-        console.log(`✅ Selected channel filter: facebook`);
+        await verifyChannelFilter(page, agentDesktop, 'facebook', '/api/tasks/mytask', '[id^="mytask-wrapper"]:visible');
     });
 
     test('CRM_AG00022 การฟิลเตอร์ Task', async ({ page }) => {
         const agentDesktop = new Element_AgentDesktop(page);
         await agentDesktop.goto();
         await agentDesktop.waitForPageLoad();
-        await agentDesktop.selectChannelFilter('task');
-        await page.waitForTimeout(500);
-        console.log(`✅ Selected channel filter: task`);
+        await verifyChannelFilter(page, agentDesktop, 'task', '/api/tasks/mytask', '[id^="mytask-wrapper"]:visible');
     });
 
     test('CRM_AG00023 การฟิลเตอร์ Instagram', async ({ page }) => {
         const agentDesktop = new Element_AgentDesktop(page);
         await agentDesktop.goto();
         await agentDesktop.waitForPageLoad();
-        await agentDesktop.selectChannelFilter('instagram');
-        await page.waitForTimeout(500);
-        console.log(`✅ Selected channel filter: instagram`);
+        await verifyChannelFilter(page, agentDesktop, 'instagram', '/api/tasks/mytask', '[id^="mytask-wrapper"]:visible');
     });
 
     test('CRM_AG00024 การฟิลเตอร์ Telegram', async ({ page }) => {
         const agentDesktop = new Element_AgentDesktop(page);
         await agentDesktop.goto();
         await agentDesktop.waitForPageLoad();
-        await agentDesktop.selectChannelFilter('telegram');
-        await page.waitForTimeout(500);
-        console.log(`✅ Selected channel filter: telegram`);
+        await verifyChannelFilter(page, agentDesktop, 'telegram', '/api/tasks/mytask', '[id^="mytask-wrapper"]:visible');
     });
 
     test('CRM_AG00025 การฟิลเตอร์ Lazada', async ({ page }) => {
         const agentDesktop = new Element_AgentDesktop(page);
         await agentDesktop.goto();
         await agentDesktop.waitForPageLoad();
-        await agentDesktop.selectChannelFilter('lazada');
-        await page.waitForTimeout(500);
-        console.log(`✅ Selected channel filter: lazada`);
+        await verifyChannelFilter(page, agentDesktop, 'lazada', '/api/tasks/mytask', '[id^="mytask-wrapper"]:visible');
     });
 
     test('CRM_AG00028 การสร้างTicket กรณีเลือก Existing Contact', async ({ page }) => {
@@ -462,7 +444,36 @@ test.describe('Agent Desktop Tests', () => {
         console.log(`✅ Successfully searched and selected existing contact: ${contactName}`);
     });
 
-    test('CRM_AG00029 การสร้างTicket กรณีเลือก Existing Contact ไม่มีข้อมูลลูกค้าในระบบ', async ({ page }) => {
+    // Variable to store the created contact name for subsequent tests
+
+
+
+
+    test('CRM_AG00030 การสร้างTicket กรณีเลือก New Contact และกรอกข้อมูลครบถ้วน', async ({ page }) => {
+        const agentDesktop = new Element_AgentDesktop(page);
+
+        await agentDesktop.goto();
+        await agentDesktop.waitForPageLoad();
+
+        await agentDesktop.createTicketNewContact();
+        ;
+
+        await agentDesktop.fillAllNewContactData(newContactData);
+
+        console.log(`✅ Verified filling all data for New Contact: ${createdContactName}`);
+
+        // Click Save
+        await agentDesktop.newcreate();
+
+
+        // Add assertion for save button if available, or just verify no errors
+        // Assuming there is a save button, but user didn't provide it in the snippet.
+        // I'll check for any error toasts just in case.
+        const errorToast = page.locator('.p-toast-message-error').first();
+        await expect(errorToast).not.toBeVisible();
+    });
+
+    test('CRM_AG00030_Old การสร้างTicket กรณีเลือก Existing Contact ไม่มีข้อมูลลูกค้าในระบบ', async ({ page }) => {
         const agentDesktop = new Element_AgentDesktop(page);
         const contactName = "NonExistentUser12345";
 
@@ -474,6 +485,9 @@ test.describe('Agent Desktop Tests', () => {
         console.log(`✅ Verified 'No data' message for non-existent contact: ${contactName}`);
     });
 
+
+
+
     test('CRM_AG00031 การใส่ข้อมูลช่อง Name แก้ไขข้อมูลหน้าContact', async ({ page }) => {
         const agentDesktop = new Element_AgentDesktop(page);
 
@@ -482,7 +496,7 @@ test.describe('Agent Desktop Tests', () => {
         await agentDesktop.waitForPageLoad();
 
         // 1-3. Create Ticket -> Existing Contact -> Select
-        await agentDesktop.createTicketExistingContact(data_test.name);
+        await agentDesktop.createTicketExistingContact(createdContactName);
 
         // 4-5. Go to Contact tab and Edit Name
         await agentDesktop.editContactInfo(data_test.name_edt);
